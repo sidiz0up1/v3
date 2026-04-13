@@ -284,39 +284,21 @@ export default function App() {
           throw new Error(`${pageId} 요소를 찾을 수 없습니다.`);
         }
 
-        // Capture Page using html2canvas for better cross-browser stability
+        // Capture Page using html2canvas
         const canvas = await html2canvas(element, {
-          scale: 2, // High quality
+          scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           logging: false,
           onclone: (clonedDoc) => {
-            // Ensure the cloned element is visible for capture
             const clonedElement = clonedDoc.getElementById(pageId);
             if (clonedElement) {
               clonedElement.style.display = 'block';
               clonedElement.style.position = 'relative';
               clonedElement.style.left = '0';
               clonedElement.style.top = '0';
-
-              // Fix for oklab/oklch color parsing error in html2canvas
-              // This recursively finds all elements and converts problematic color functions to hex/rgb
-              const allElements = clonedElement.getElementsByTagName('*');
-              for (let j = 0; j < allElements.length; j++) {
-                const el = allElements[j] as HTMLElement;
-                const style = window.getComputedStyle(el);
-                
-                // Check common properties that might use oklab/oklch
-                const props = ['backgroundColor', 'color', 'borderColor', 'borderTopColor', 'borderBottomColor', 'borderLeftColor', 'borderRightColor'];
-                props.forEach(prop => {
-                  const val = (style as any)[prop];
-                  if (val && (val.includes('oklch') || val.includes('oklab'))) {
-                    // Fallback to a safe color if parsing fails
-                    el.style[prop as any] = '#6366f1'; 
-                  }
-                });
-              }
+              clonedElement.style.visibility = 'visible';
             }
           }
         });
@@ -889,18 +871,40 @@ export default function App() {
         </div>
       </main>
 
-      {/* Hidden PDF Template */}
+      {/* Hidden PDF Template (Rendered off-screen to ensure styles are applied) */}
       <div className="fixed pointer-events-none" style={{ left: '-9999px', top: '0', zIndex: -1, opacity: 1 }}>
         {analysisResult && (
-          <PostureReport 
-            id="inbody-report"
-            data={data}
-            analysisResult={analysisResult}
-            memo={memo}
-            productRecommendation={productRecommendation}
-            selectedProductIds={selectedProductIds}
-            isPdf={true}
-          />
+          <>
+            <PostureReport 
+              id="report-page-1"
+              data={data}
+              analysisResult={analysisResult}
+              memo={memo}
+              productRecommendation={productRecommendation}
+              selectedProductIds={selectedProductIds}
+              isPdf={true}
+            />
+            <div style={{ height: '20px' }} />
+            <PostureReport 
+              id="report-page-2"
+              data={data}
+              analysisResult={analysisResult}
+              memo={memo}
+              productRecommendation={productRecommendation}
+              selectedProductIds={selectedProductIds}
+              isPdf={true}
+            />
+            <div style={{ height: '20px' }} />
+            <PostureReport 
+              id="report-page-3"
+              data={data}
+              analysisResult={analysisResult}
+              memo={memo}
+              productRecommendation={productRecommendation}
+              selectedProductIds={selectedProductIds}
+              isPdf={true}
+            />
+          </>
         )}
       </div>
 
