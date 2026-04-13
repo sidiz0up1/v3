@@ -20,25 +20,30 @@ interface PostureReportProps {
   selectedProductIds?: string[];
   id?: string;
   isPdf?: boolean;
+  page?: 1 | 2 | 3;
 }
 
-export const PostureReport: React.FC<PostureReportProps> = ({ data, analysisResult, memo, productRecommendation, selectedProductIds = [], id, isPdf }) => {
+export const PostureReport: React.FC<PostureReportProps> = ({ data, analysisResult, memo, productRecommendation, selectedProductIds = [], id, isPdf, page }) => {
   return (
     <div id={id} className={isPdf ? 'flex flex-col' : ''}>
-      <Page1 data={data} analysisResult={analysisResult} isPdf={isPdf} />
-      <Page2 
-        data={data} 
-        analysisResult={analysisResult} 
-        isPdf={isPdf} 
-      />
-      <Page3
-        data={data}
-        analysisResult={analysisResult}
-        memo={memo}
-        productRecommendation={productRecommendation}
-        selectedProductIds={selectedProductIds}
-        isPdf={isPdf}
-      />
+      {(!page || page === 1) && <Page1 data={data} analysisResult={analysisResult} isPdf={isPdf} />}
+      {(!page || page === 2) && (
+        <Page2 
+          data={data} 
+          analysisResult={analysisResult} 
+          isPdf={isPdf} 
+        />
+      )}
+      {(!page || page === 3) && (
+        <Page3
+          data={data}
+          analysisResult={analysisResult}
+          memo={memo}
+          productRecommendation={productRecommendation}
+          selectedProductIds={selectedProductIds}
+          isPdf={isPdf}
+        />
+      )}
     </div>
   );
 };
@@ -110,7 +115,6 @@ const Footer = () => (
 
 const Page1 = ({ data, analysisResult, isPdf }: { data: PostureData; analysisResult: AnalysisResult; isPdf?: boolean }) => (
     <div 
-      id={isPdf ? 'report-page-1' : undefined}
       className={`bg-white font-sans text-slate-900 ${isPdf ? 'relative' : 'rounded-[32px] border border-slate-100 overflow-hidden mb-8'}`} 
       style={isPdf ? { width: '794px', height: '1123px' } : { width: '100%', maxWidth: '794px', margin: '0 auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
     >
@@ -420,7 +424,6 @@ const Page2 = ({ data, analysisResult, isPdf }: {
   isPdf?: boolean 
 }) => (
     <div 
-      id={isPdf ? 'report-page-2' : undefined}
       className={`bg-white font-sans text-slate-900 ${isPdf ? 'relative' : 'rounded-[32px] border border-slate-100 overflow-hidden mb-8'}`} 
       style={isPdf ? { width: '794px', height: '1123px' } : { width: '100%', maxWidth: '794px', margin: '0 auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
     >
@@ -570,7 +573,6 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
 
   return (
     <div 
-      id={isPdf ? 'report-page-3' : undefined}
       className={`bg-white font-sans text-slate-900 ${isPdf ? 'relative' : 'rounded-[32px] border border-slate-100 overflow-hidden'}`} 
       style={isPdf ? { width: '794px', height: '1123px' } : { width: '100%', maxWidth: '794px', margin: '0 auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
     >

@@ -274,7 +274,7 @@ export default function App() {
         compress: true
       });
 
-      const pageIds = ['report-page-1', 'report-page-2', 'report-page-3'];
+      const pageIds = ['pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
       
       for (let i = 0; i < pageIds.length; i++) {
         const pageId = pageIds[i];
@@ -865,14 +865,41 @@ export default function App() {
       {/* Hidden PDF Template (Rendered off-screen to ensure styles are applied) */}
       <div className="fixed pointer-events-none" style={{ left: '-9999px', top: '0', zIndex: -1, opacity: 1 }}>
         {analysisResult && (
-          <PostureReport 
-            data={data}
-            analysisResult={analysisResult}
-            memo={memo}
-            productRecommendation={productRecommendation}
-            selectedProductIds={selectedProductIds}
-            isPdf={true}
-          />
+          <>
+            <div id="pdf-page-1">
+              <PostureReport 
+                data={data}
+                analysisResult={analysisResult}
+                memo={memo}
+                productRecommendation={productRecommendation}
+                selectedProductIds={selectedProductIds}
+                isPdf={true}
+                page={1}
+              />
+            </div>
+            <div id="pdf-page-2">
+              <PostureReport 
+                data={data}
+                analysisResult={analysisResult}
+                memo={memo}
+                productRecommendation={productRecommendation}
+                selectedProductIds={selectedProductIds}
+                isPdf={true}
+                page={2}
+              />
+            </div>
+            <div id="pdf-page-3">
+              <PostureReport 
+                data={data}
+                analysisResult={analysisResult}
+                memo={memo}
+                productRecommendation={productRecommendation}
+                selectedProductIds={selectedProductIds}
+                isPdf={true}
+                page={3}
+              />
+            </div>
+          </>
         )}
       </div>
 
