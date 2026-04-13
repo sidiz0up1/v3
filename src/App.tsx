@@ -865,37 +865,14 @@ export default function App() {
       {/* Hidden PDF Template (Rendered off-screen to ensure styles are applied) */}
       <div className="fixed pointer-events-none" style={{ left: '-9999px', top: '0', zIndex: -1, opacity: 1 }}>
         {analysisResult && (
-          <>
-            <PostureReport 
-              id="report-page-1"
-              data={data}
-              analysisResult={analysisResult}
-              memo={memo}
-              productRecommendation={productRecommendation}
-              selectedProductIds={selectedProductIds}
-              isPdf={true}
-            />
-            <div style={{ height: '20px' }} />
-            <PostureReport 
-              id="report-page-2"
-              data={data}
-              analysisResult={analysisResult}
-              memo={memo}
-              productRecommendation={productRecommendation}
-              selectedProductIds={selectedProductIds}
-              isPdf={true}
-            />
-            <div style={{ height: '20px' }} />
-            <PostureReport 
-              id="report-page-3"
-              data={data}
-              analysisResult={analysisResult}
-              memo={memo}
-              productRecommendation={productRecommendation}
-              selectedProductIds={selectedProductIds}
-              isPdf={true}
-            />
-          </>
+          <PostureReport 
+            data={data}
+            analysisResult={analysisResult}
+            memo={memo}
+            productRecommendation={productRecommendation}
+            selectedProductIds={selectedProductIds}
+            isPdf={true}
+          />
         )}
       </div>
 
