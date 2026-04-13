@@ -199,6 +199,18 @@ export default function ConsultationGuide() {
                                     <div className="text-lg sidiz-voice-1 text-slate-700 leading-[1.8] whitespace-pre-wrap markdown-body">
                                       <Markdown>{item.script}</Markdown>
                                     </div>
+
+                                    {item.check_point && (
+                                      <div className="mt-6 pt-6 border-t border-slate-100">
+                                        <div className="flex items-center gap-2 text-emerald-600 mb-3">
+                                          <CheckCircle2 size={16} />
+                                          <span className="text-sm font-bold uppercase tracking-wider">Check Points</span>
+                                        </div>
+                                        <div className="text-base text-slate-500 leading-relaxed whitespace-pre-wrap bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/50">
+                                          {item.check_point}
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -329,6 +341,18 @@ export default function ConsultationGuide() {
                                       <div className="text-xl sidiz-voice-1 text-indigo-900 leading-[1.8] whitespace-pre-wrap font-medium markdown-body">
                                         <Markdown>{item.script}</Markdown>
                                       </div>
+
+                                      {item.check_point && (
+                                        <div className="mt-6 pt-6 border-t border-indigo-100">
+                                          <div className="flex items-center gap-2 text-emerald-600 mb-3">
+                                            <CheckCircle2 size={16} />
+                                            <span className="text-sm font-bold uppercase tracking-wider">Check Points</span>
+                                          </div>
+                                          <div className="text-base text-slate-600 leading-relaxed whitespace-pre-wrap bg-white/50 p-4 rounded-xl border border-emerald-100/50">
+                                            {item.check_point}
+                                          </div>
+                                        </div>
+                                      )}
                                       
                                       {/* Sub-branches for Step 3 Body Types */}
                                       {currentStep === '인사이트 기반 맞춤 제안 및 체험' && category2 === '종합 체형 분석 결과' && (
