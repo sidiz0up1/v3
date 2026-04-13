@@ -1,0 +1,194 @@
+@import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+
+  --color-indigo-50: #eef2ff;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-200: #c7d2fe;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+  --color-indigo-800: #3730a3;
+  --color-indigo-900: #312e81;
+  --color-indigo-950: #1e1b4b;
+  
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-teal-600: #0d9488;
+  --color-blue-50: #eff6ff;
+  --color-blue-600: #2563eb;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-orange-50: #fff7ed;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-violet-500: #8b5cf6;
+  --color-purple-600: #9333ea;
+  --color-rose-50: #fff1f2;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-700: #be123c;
+  --color-pink-600: #db2777;
+  --color-red-50: #fef2f2;
+  --color-red-600: #dc2626;
+
+  /* SIDIZ Brand Colors - Explicit Hex for html2canvas compatibility */
+  --color-sidiz-blue: #003EFF;
+  --color-sidiz-light-blue: #94CDEB;
+  --color-sidiz-medium-blue: #6B8BF6;
+  --color-sidiz-core-light: #F0F0F1;
+  --color-sidiz-core-dark: #9D9FA2;
+  --color-sidiz-medium-gray: #7D8083;
+  --color-sidiz-dark-gray: #45474A;
+  --color-sidiz-black: #343638;
+
+  /* Standard Tailwind Colors as Hex to prevent oklab parsing errors */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  --color-indigo-50: #eef2ff;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  
+  --color-orange-50: #fff7ed;
+  --color-orange-500: #f97316;
+  --color-rose-50: #fff1f2;
+  --color-rose-500: #f43f5e;
+}
+
+/* SIDIZ Brand Typography System */
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    letter-spacing: -0.025em; /* Default Korean tracking -25 */
+    transform: scaleX(0.98); /* Default Korean width 98% */
+    transform-origin: center;
+  }
+
+  /* English/Number specific overrides */
+  :lang(en), [class*="font-mono"], .font-eng {
+    letter-spacing: 0.01em; /* Headline tracking +10 */
+    transform: scaleX(1); /* English width 100% */
+  }
+}
+
+@layer utilities {
+  /* SIDIZ Voice 1: Light (Basic) -> Pretendard Regular */
+  .sidiz-voice-1 {
+    font-weight: 400;
+  }
+
+  /* SIDIZ Voice 2: Thin (Hero) -> Pretendard Extra Light */
+  .sidiz-voice-2 {
+    font-weight: 200;
+  }
+
+  /* SIDIZ Voice 3: Book (Structure) -> Pretendard Medium */
+  .sidiz-voice-3 {
+    font-weight: 500;
+  }
+
+  /* Tracking & Width for Headlines */
+  .sidiz-headline {
+    letter-spacing: 0.01em; /* +10 */
+    transform: scaleX(1); /* 100% */
+  }
+
+  /* Tracking & Width for Korean Body */
+  .sidiz-body-kr {
+    letter-spacing: -0.025em; /* -25 */
+    transform: scaleX(0.98); /* 98% */
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: portrait;
+    margin: 3mm;
+  }
+  body {
+    background: white !important;
+    padding: 0 !important;
+    transform: none !important;
+    transform-origin: center !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .bg-slate-900 {
+    background-color: #0f172a !important;
+    color: white !important;
+  }
+  .bg-indigo-600 {
+    background-color: #4f46e5 !important;
+    color: white !important;
+  }
+  .bg-indigo-50 {
+    background-color: #eef2ff !important;
+  }
+  .bg-slate-50 {
+    background-color: #f8fafc !important;
+  }
+  .text-indigo-600 {
+    color: #4f46e5 !important;
+  }
+  .text-indigo-500 {
+    color: #6366f1 !important;
+  }
+}
+
+/* Markdown Styling for Consultation Guide */
+.markdown-body strong {
+  font-weight: 700;
+  color: var(--color-sidiz-blue);
+  background-color: rgba(0, 62, 255, 0.05);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.markdown-body p {
+  margin-bottom: 0.5em;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
