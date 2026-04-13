@@ -299,6 +299,26 @@ export default function App() {
               clonedElement.style.left = '0';
               clonedElement.style.top = '0';
               clonedElement.style.visibility = 'visible';
+
+              // [강력한 해결책] 모든 요소의 색상을 RGB로 강제 변환
+              // html2canvas가 oklch/oklab을 해석하지 못하므로, 
+              // 브라우저의 getComputedStyle이 반환하는 rgb 값을 직접 주입합니다.
+              const allElements = clonedElement.getElementsByTagName('*');
+              for (let j = 0; j < allElements.length; j++) {
+                const el = allElements[j] as HTMLElement;
+                const style = window.getComputedStyle(el);
+                
+                // 문제가 되는 주요 색상 속성들을 RGB로 고정
+                el.style.color = style.color;
+                el.style.backgroundColor = style.backgroundColor;
+                el.style.borderColor = style.borderColor;
+                el.style.borderTopColor = style.borderTopColor;
+                el.style.borderBottomColor = style.borderBottomColor;
+                el.style.borderLeftColor = style.borderLeftColor;
+                el.style.borderRightColor = style.borderRightColor;
+                el.style.fill = style.fill;
+                el.style.stroke = style.stroke;
+              }
             }
           }
         });
