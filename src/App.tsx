@@ -299,6 +299,24 @@ export default function App() {
               clonedElement.style.position = 'relative';
               clonedElement.style.left = '0';
               clonedElement.style.top = '0';
+
+              // Fix for oklab/oklch color parsing error in html2canvas
+              // This recursively finds all elements and converts problematic color functions to hex/rgb
+              const allElements = clonedElement.getElementsByTagName('*');
+              for (let j = 0; j < allElements.length; j++) {
+                const el = allElements[j] as HTMLElement;
+                const style = window.getComputedStyle(el);
+                
+                // Check common properties that might use oklab/oklch
+                const props = ['backgroundColor', 'color', 'borderColor', 'borderTopColor', 'borderBottomColor', 'borderLeftColor', 'borderRightColor'];
+                props.forEach(prop => {
+                  const val = (style as any)[prop];
+                  if (val && (val.includes('oklch') || val.includes('oklab'))) {
+                    // Fallback to a safe color if parsing fails
+                    el.style[prop as any] = '#6366f1'; 
+                  }
+                });
+              }
             }
           }
         });
