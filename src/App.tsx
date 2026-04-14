@@ -251,11 +251,6 @@ export default function App() {
   };
 
   const handlePrint = async () => {
-    if (!showResult || !analysisResult) {
-      alert('결과 페이지에서만 PDF 저장이 가능합니다.');
-      return;
-    }
-
     const btn = document.activeElement as HTMLButtonElement;
     const originalText = btn ? btn.innerText : '';
     if (btn) {
