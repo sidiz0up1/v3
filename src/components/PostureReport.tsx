@@ -372,8 +372,8 @@ const PostureRadarChart = React.memo(({ data, isPdf }: { data: any[]; isPdf?: bo
       <Radar 
         name="Balance" 
         dataKey="value" 
-        stroke={hasCaution ? '#f97316' : '#002D5D'} 
-        fill={hasCaution ? '#f97316' : '#002D5D'} 
+        stroke={hasCaution ? '#f97316' : '#003EFF'} 
+        fill={hasCaution ? '#f97316' : '#003EFF'} 
         fillOpacity={0.4} 
         isAnimationActive={!isPdf}
       />
@@ -735,9 +735,9 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
   const total = max - min;
   
   const getBarColor = (val: number) => {
-    if (val < ranges[1]) return 'bg-sidiz-black'; // Normal
-    if (val < ranges[2]) return 'bg-amber-500'; // Caution
-    return 'bg-rose-500'; // Severe
+    if (val < ranges[1]) return '#343638'; // Normal (sidiz-black)
+    if (val < ranges[2]) return '#f59e0b'; // Caution (amber-500)
+    return '#f43f5e'; // Severe (rose-500)
   };
 
   const isAbnormal = valueL >= ranges[1] || valueR >= ranges[1];
@@ -782,8 +782,8 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
             {/* The Bar */}
             <div className="relative h-2 w-full bg-transparent">
               <div 
-                className={`absolute left-0 top-0 bottom-0 ${getBarColor(val)} ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
-                style={{ width: `${percentage}%`, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+                className={`absolute left-0 top-0 bottom-0 ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
+                style={{ width: `${percentage}%`, backgroundColor: getBarColor(val), boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
               />
             </div>
           </div>
@@ -874,9 +874,9 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
   const total = max - min;
   
   const getBarColor = (val: number) => {
-    if (val < ranges[1]) return 'bg-sidiz-black';
-    if (val < ranges[2]) return 'bg-amber-500';
-    return 'bg-rose-500';
+    if (val < ranges[1]) return '#343638'; // Normal (sidiz-black)
+    if (val < ranges[2]) return '#f59e0b'; // Caution (amber-500)
+    return '#f43f5e'; // Severe (rose-500)
   };
 
   const isAbnormal = (valueF?.value >= ranges[1]) || (valueB?.value >= ranges[1]);
@@ -924,8 +924,8 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
             {/* The Bar */}
             <div className="relative h-2 w-full bg-transparent">
               <div 
-                className={`absolute left-0 top-0 bottom-0 ${getBarColor(val)} ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
-                style={{ width: `${percentage}%`, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+                className={`absolute left-0 top-0 bottom-0 ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
+                style={{ width: `${percentage}%`, backgroundColor: getBarColor(val), boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
               />
             </div>
           </div>

@@ -291,6 +291,24 @@ export default function App() {
             if (el) {
               el.style.display = 'block';
               el.style.visibility = 'visible';
+              
+              // Strip oklab/oklch color functions that html2canvas can't parse
+              const allElements = el.getElementsByTagName('*');
+              for (let j = 0; j < allElements.length; j++) {
+                const element = allElements[j] as HTMLElement;
+                const style = window.getComputedStyle(element);
+                
+                // Check common color properties
+                ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'].forEach(prop => {
+                  const val = (element.style as any)[prop] || style.getPropertyValue(prop);
+                  if (val && (val.includes('oklab') || val.includes('oklch'))) {
+                    // Fallback to a safe color if oklab/oklch is detected
+                    (element.style as any)[prop] = prop === 'color' ? '#334155' : 
+                                                   prop === 'backgroundColor' ? 'transparent' : 
+                                                   'currentColor';
+                  }
+                });
+              }
             }
           }
         });
