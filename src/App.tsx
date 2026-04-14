@@ -34,7 +34,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 import { getSupabase } from './lib/supabase';
 
 import { storageService } from './services/storageService';
@@ -279,17 +279,23 @@ export default function App() {
           throw new Error(`${pageId} 요소를 찾을 수 없습니다.`);
         }
 
-        // Capture Page using html-to-image (much more robust for modern CSS like oklch/oklab)
-        const dataUrl = await toPng(element, {
-          quality: 0.95,
-          pixelRatio: 2,
+        // Capture Page using html2canvas (more stable across different computers/browsers)
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
           backgroundColor: '#ffffff',
-          cacheBust: true,
-          style: {
-            display: 'block',
-            visibility: 'visible',
+          logging: false,
+          onclone: (clonedDoc) => {
+            const el = clonedDoc.getElementById(pageId);
+            if (el) {
+              el.style.display = 'block';
+              el.style.visibility = 'visible';
+            }
           }
         });
+        
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
         
         if (!dataUrl || dataUrl === 'data:,') {
           throw new Error(`${pageId} 캡처에 실패했습니다.`);

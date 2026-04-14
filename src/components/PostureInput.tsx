@@ -89,18 +89,36 @@ export const PostureInput: React.FC<PostureInputProps> = ({
       <div className="flex items-center gap-2">
         {horizontal ? (
           <div className="flex items-center gap-1 w-full">
-            <select 
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-eng"
-              value={horizontalValue?.direction || 'None'}
-              onChange={(e) => onHorizontalChange?.({ 
-                direction: e.target.value as 'L' | 'R' | 'None', 
-                value: horizontalValue?.value || 0 
-              })}
-            >
-              <option value="None">-</option>
-              <option value="L">왼</option>
-              <option value="R">오</option>
-            </select>
+            <div className="flex bg-slate-100 p-0.5 rounded-lg shrink-0">
+              <button
+                type="button"
+                onClick={() => onHorizontalChange?.({ 
+                  direction: horizontalValue?.direction === 'L' ? 'None' : 'L', 
+                  value: horizontalValue?.value || 0 
+                })}
+                className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                  horizontalValue?.direction === 'L' 
+                    ? 'bg-white text-indigo-600 shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                왼
+              </button>
+              <button
+                type="button"
+                onClick={() => onHorizontalChange?.({ 
+                  direction: horizontalValue?.direction === 'R' ? 'None' : 'R', 
+                  value: horizontalValue?.value || 0 
+                })}
+                className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
+                  horizontalValue?.direction === 'R' 
+                    ? 'bg-white text-indigo-600 shadow-sm' 
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                오
+              </button>
+            </div>
             <input
               type="text"
               inputMode="decimal"
