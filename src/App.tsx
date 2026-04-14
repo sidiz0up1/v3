@@ -292,20 +292,39 @@ export default function App() {
               el.style.display = 'block';
               el.style.visibility = 'visible';
               
-              // Strip oklab/oklch color functions that html2canvas can't parse
+              // CRITICAL: Remove all CSS rules that contain oklab/oklch from stylesheets
+              // html2canvas crashes when its internal parser encounters these strings
+              try {
+                const styleSheets = Array.from(clonedDoc.styleSheets);
+                styleSheets.forEach((sheet) => {
+                  try {
+                    const rules = Array.from(sheet.cssRules || []);
+                    for (let i = rules.length - 1; i >= 0; i--) {
+                      const rule = rules[i];
+                      if (rule.cssText && (rule.cssText.includes('oklab') || rule.cssText.includes('oklch'))) {
+                        sheet.deleteRule(i);
+                      }
+                    }
+                  } catch (e) {
+                    // Skip cross-origin stylesheets that we can't access
+                    console.warn('Could not access stylesheet for cleaning:', e);
+                  }
+                });
+              } catch (e) {
+                console.error('Error cleaning stylesheets:', e);
+              }
+              
+              // Also sanitize inline styles for all elements
               const allElements = el.getElementsByTagName('*');
               for (let j = 0; j < allElements.length; j++) {
                 const element = allElements[j] as HTMLElement;
-                const style = window.getComputedStyle(element);
+                const style = element.style;
                 
-                // Check common color properties
+                // Check common color properties in inline styles
                 ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'].forEach(prop => {
-                  const val = (element.style as any)[prop] || style.getPropertyValue(prop);
+                  const val = (style as any)[prop];
                   if (val && (val.includes('oklab') || val.includes('oklch'))) {
-                    // Fallback to a safe color if oklab/oklch is detected
-                    (element.style as any)[prop] = prop === 'color' ? '#334155' : 
-                                                   prop === 'backgroundColor' ? 'transparent' : 
-                                                   'currentColor';
+                    (style as any)[prop] = ''; // Remove problematic inline style
                   }
                 });
               }
