@@ -454,12 +454,13 @@ const Page2 = ({ data, analysisResult, isPdf }: {
             </div>
 
             {/* Fixed Illustration/Image Section - Maintained Aspect Ratio */}
-            <div className="my-0.5 flex justify-center w-full">
+            <div className="my-0.5 flex justify-center w-full bg-white">
               <img 
                 src={typeImages[analysisResult.mainType]} 
                 alt={typeLabels[analysisResult.mainType]} 
-                className="w-full h-auto max-h-64 object-contain"
+                className="w-full h-auto max-h-64 object-contain block"
                 referrerPolicy="no-referrer"
+                style={{ minHeight: '200px' }}
               />
             </div>
 
