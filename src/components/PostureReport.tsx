@@ -25,7 +25,7 @@ interface PostureReportProps {
 
 export const PostureReport: React.FC<PostureReportProps> = ({ data, analysisResult, memo, productRecommendation, selectedProductIds = [], id, isPdf, page }) => {
   return (
-    <div id={id} className={isPdf ? 'flex flex-col' : ''}>
+    <div id={id} className={`${isPdf ? 'flex flex-col is-pdf-mode' : ''}`}>
       {(!page || page === 1) && <Page1 data={data} analysisResult={analysisResult} isPdf={isPdf} />}
       {(!page || page === 2) && (
         <Page2 
@@ -120,7 +120,7 @@ const Page1 = ({ data, analysisResult, isPdf }: { data: PostureData; analysisRes
     >
     <div className="px-12 py-10">
       {/* Thin Info Bar */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-6">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
         <h1 className="text-sm sidiz-voice-2 text-indigo-900 sidiz-headline">
           SIDIZ <span className="text-indigo-700">| THE PROGRESSIVE</span>
         </h1>
@@ -137,8 +137,8 @@ const Page1 = ({ data, analysisResult, isPdf }: { data: PostureData; analysisRes
       </div>
       <div className="flex flex-col gap-3">
         {/* Top Section: User Info */}
-        <div className="border-b border-indigo-50 pb-2">
-          <div className="mb-1">
+        <div className="border-b border-slate-100 pb-2 mb-4">
+          <div className="mb-2">
             <h2 className="text-[14px] sidiz-voice-3 text-sidiz-black font-bold">
               {data.userInfo.name || '고객'}님의 체형 분석 결과 리포트입니다.
             </h2>
@@ -162,189 +162,95 @@ const Page1 = ({ data, analysisResult, isPdf }: { data: PostureData; analysisRes
             </div>
           </div>
         </div>
-
-        {/* Score & Ranking Section */}
-        <div className="flex justify-between items-end border-b border-indigo-50 pb-4">
-          <div className="text-left">
-            <h2 className="text-[9px] sidiz-voice-3 text-indigo-400 uppercase sidiz-headline mb-0.5">종합 체형 점수</h2>
-            <div className="flex items-baseline">
-              <span className="text-4xl sidiz-voice-2 text-indigo-600 font-eng leading-none">{analysisResult.overallScore}</span>
-              <span className="text-lg sidiz-voice-3 text-indigo-400 ml-2 font-eng">/ 100</span>
+        
+        {/* Score & Ranking Section - Redesigned with Underlines */}
+        <div className="border-b border-slate-100 py-3 mb-2 flex justify-between items-end">
+          <div className="flex flex-col">
+            <h2 className="text-[10px] sidiz-voice-1 text-indigo-500 uppercase tracking-widest mb-1">종합 체형 점수</h2>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl sidiz-voice-2 text-indigo-600 font-eng leading-none">{analysisResult.overallScore}</span>
+              <span className="text-xl sidiz-voice-3 text-indigo-400 font-eng">/ 100</span>
             </div>
           </div>
           
-          {data.topPercent !== null && (
-            <div className="text-right">
-              <h2 className="text-[9px] sidiz-voice-3 text-indigo-400 uppercase sidiz-headline mb-1">체형 랭킹</h2>
-              <div className="flex items-baseline justify-end">
-                <span className="text-3xl sidiz-voice-2 text-indigo-600 font-eng leading-none">100명 중 {data.topPercent}등</span>
-                <span className="text-lg sidiz-voice-3 text-indigo-400 ml-1 font-eng">입니다.</span>
-              </div>
+          <div className="flex flex-col items-end">
+            <h2 className="text-[10px] sidiz-voice-1 text-indigo-500 uppercase tracking-widest mb-1">체형 랭킹</h2>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl sidiz-voice-2 text-indigo-600 leading-none">100명 중 {data.topPercent}등</span>
+              <span className="text-lg sidiz-voice-3 text-indigo-400 ml-1">입니다.</span>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Middle Section: Data Analysis */}
-        <div className="space-y-4">
-          {/* 1. 핵심 분석 지표 (Priority 1 - Combined with Posture Alignment) */}
-          <section>
-            <div className="flex items-center gap-2 mb-1 border-b-2 border-sidiz-black pb-1">
-              <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">핵심 분석 지표</h2>
-              <span className="text-[8px] text-sidiz-medium-gray sidiz-voice-1 ml-auto">* 주요 항목별 정렬 상태 및 분석 요약</span>
+        {/* Full Body Type Analysis Section (Moved from Page 2) */}
+        <section className="mt-2">
+          <div className="flex items-center gap-2 mb-4 border-b-2 border-sidiz-black pb-2">
+            <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">종합 체형 분석 결과</h2>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-start gap-6 p-1">
+              <div className="flex-1">
+                <p className="text-[8px] text-indigo-400 sidiz-voice-3 uppercase mb-1 font-eng tracking-widest">Main Body Type</p>
+                <h3 className="text-[20px] sidiz-voice-3 sidiz-headline text-indigo-600 mb-1.5">{typeLabels[analysisResult.mainType]}</h3>
+                <p className="text-[9.5px] text-sidiz-black sidiz-voice-1 leading-relaxed">
+                  {analysisResult.description}
+                </p>
+              </div>
+              <div className="shrink-0 flex flex-col items-center">
+                <PostureRadarChart data={analysisResult.radarData} isPdf={isPdf} />
+                <p className="text-[7px] text-sidiz-medium-gray sidiz-voice-1 text-center mt-1">종합 자세 균형 지표</p>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 border-t border-slate-100 mt-2 pt-2">
-              <InBodyDualBarChart 
-                label="라운드숄더" 
-                description="어깨가 앞으로 말려 있는 상태"
-                valueL={data.sideLeft.roundShoulder || 0} 
-                valueR={data.sideRight.roundShoulder || 0} 
-                ranges={[0, 30, 45, 60]} 
-                labels={['정상', '주의', '심각']}
-                unit="°" 
-                showHeader={true}
-                isPdf={isPdf}
-                meaning={analysisResult.keyMetrics.find(m => m.label.includes('라운드숄더'))?.meaning}
-              />
-              <InBodyDualBarChart 
-                label="흉추 각도" 
-                description="등뼈(흉추)의 굽은 정도"
-                valueL={data.sideLeft.thoracic || 0} 
-                valueR={data.sideRight.thoracic || 0} 
-                ranges={[20, 35, 45, 60]} 
-                labels={['정상', '주의', '심각']}
-                unit="°" 
-                showHeader={true}
-                isPdf={isPdf}
-                meaning={analysisResult.keyMetrics.find(m => m.label.includes('흉추 각도'))?.meaning}
-              />
-              <InBodyDualBarChart 
-                label="거북목" 
-                description="경추가 앞으로 돌출된 정도"
-                valueL={data.sideLeft.forwardHead || 0} 
-                valueR={data.sideRight.forwardHead || 0} 
-                ranges={[0, 40, 50, 60]} 
-                labels={['정상', '주의', '심각']}
-                unit="°" 
-                showHeader={true}
-                isPdf={isPdf}
-                meaning={analysisResult.keyMetrics.find(m => m.label.includes('거북목'))?.meaning}
-              />
-              <InBodyPelvisDualBarChart 
-                label="골반 수평"
-                description="좌우 골반의 높낮이 차이"
-                valueF={data.front.pelvisHorizontal}
-                valueB={data.back.pelvisHorizontal}
-                ranges={[0, 2, 4, 6]}
-                labels={['정상', '주의', '심각']}
-                unit="°"
-                showHeader={true}
-                isPdf={isPdf}
-                meaning={analysisResult.keyMetrics.find(m => m.label.includes('골반 수평'))?.meaning}
-              />
-            </div>
-          </section>
 
-          {/* 3. 자세 측정 데이터 상세 (Priority 3 - Technical Data) */}
-          <section>
-            <div className="flex items-center gap-2 mb-2 border-b-2 border-sidiz-black pb-1">
-              <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">자세 측정 데이터 상세</h2>
-              <span className="text-[8px] text-sidiz-medium-gray sidiz-voice-1 ml-auto">* 정밀 측정 수치 및 상태</span>
+            {/* Illustration/Image Section */}
+            <div className="flex justify-center w-full py-1">
+              <img 
+                src={typeImages[analysisResult.mainType]} 
+                alt={typeLabels[analysisResult.mainType]} 
+                className="w-full h-auto object-contain block"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
+              />
             </div>
-            
-            <div className="grid grid-cols-1 gap-y-6">
-              <div className="grid grid-cols-2 gap-x-4">
-                {/* 어깨/목 */}
-                <div>
-                  <h3 className="text-[9px] sidiz-voice-3 text-sidiz-black mb-1 px-1">어깨 및 목</h3>
-                  <div className="rounded-2xl border border-slate-100 overflow-hidden" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                    <table className="w-full text-[8px] border-collapse">
-                      <thead>
-                        <tr className="bg-sidiz-core-light text-sidiz-dark-gray sidiz-voice-3">
-                          <th className="py-1 px-1 text-left border-b border-r border-slate-200 last:border-r-0">측정 항목</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">측정 수치</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">정상 범위</th>
-                          <th className="py-1 px-1 text-center border-b border-slate-200">상태(왼/오)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="sidiz-voice-1">
-                        <InBodyDualTableRow label="어깨 기울기" description="어깨 끝점의 각도를 통해 어깨 상태를 판별합니다." valueL={data.front.leftShoulderSlope} valueR={data.front.rightShoulderSlope} isSlope />
-                        <InBodyDualTableRow label="라운드 숄더" description="어깨가 앞으로 말려 있는 상태를 측정합니다." valueL={data.sideLeft.roundShoulder} valueR={data.sideRight.roundShoulder} isRound />
-                        <InBodyDualTableRow label="거북목" description="경추가 앞으로 돌출된 정도를 측정합니다." valueL={data.sideLeft.forwardHead} valueR={data.sideRight.forwardHead} isHead />
-                        <InBodyFrontBackTableRow label="어깨 수평" description="좌우 어깨 끝점의 높이 차이를 측정합니다." valueF={data.front.shoulderHorizontal} valueB={data.back.shoulderHorizontal} />
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
 
-                {/* 골반 */}
-                <div>
-                  <h3 className="text-[9px] sidiz-voice-3 text-sidiz-black mb-1 px-1">골반</h3>
-                  <div className="rounded-2xl border border-slate-100 overflow-hidden" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                    <table className="w-full text-[8px] border-collapse">
-                      <thead>
-                        <tr className="bg-sidiz-core-light text-sidiz-dark-gray sidiz-voice-3">
-                          <th className="py-1 px-1 text-left border-b border-r border-slate-200 last:border-r-0">측정 항목</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">측정 수치</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">정상 범위</th>
-                          <th className="py-1 px-1 text-center border-b border-slate-200">상태(왼/오)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="sidiz-voice-1">
-                        <InBodyDualTableRow label="골반 전방경사" description="골반이 앞뒤로 기울어진 각도를 측정합니다." valueL={data.sideLeft.pelvisTilt} valueR={data.sideRight.pelvisTilt} isTilt />
-                        <InBodyFrontBackTableRow label="골반 수평 각도" description="좌우 골반의 높낮이 차이를 전/후면에서 측정합니다." valueF={data.front.pelvisHorizontal} valueB={data.back.pelvisHorizontal} />
-                      </tbody>
-                    </table>
-                  </div>
+            <div className="grid grid-cols-2 gap-3">
+              {/* 체형 특징 섹션 */}
+              <div className="p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm flex flex-col">
+                <h4 className="text-[10px] sidiz-voice-3 text-sidiz-black flex items-center gap-1.5 mb-2.5 border-b border-slate-50 pb-2">
+                  <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                  체형 특징
+                </h4>
+                <ul className="text-[9px] text-sidiz-dark-gray sidiz-voice-1 space-y-1.5 pl-1 mb-3 flex-1">
+                  {analysisResult.bodyFeatures.map((f, i) => <li key={i} className="flex gap-2 leading-relaxed"><span>•</span>{f}</li>)}
+                </ul>
+                <div className="flex items-start min-h-[30px] pt-1">
+                  <p className="text-[9px] text-sidiz-black sidiz-voice-1 leading-relaxed">
+                    <span className="text-indigo-600 mr-1 font-bold">소견:</span>
+                    {analysisResult.summary}
+                  </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-4">
-                {/* 무릎/다리 */}
-                <div>
-                  <h3 className="text-[9px] sidiz-voice-3 text-sidiz-black mb-1 px-1">무릎 및 다리</h3>
-                  <div className="rounded-2xl border border-slate-100 overflow-hidden" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                    <table className="w-full text-[8px] border-collapse">
-                      <thead>
-                        <tr className="bg-sidiz-core-light text-sidiz-dark-gray sidiz-voice-3">
-                          <th className="py-1 px-1 text-left border-b border-r border-slate-200 last:border-r-0">측정 항목</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">측정 수치</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">정상 범위</th>
-                          <th className="py-1 px-1 text-center border-b border-slate-200">상태(왼/오)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="sidiz-voice-1">
-                        <InBodyDualTableRow label="다리 각도" description="다리가 벌어지거나 모아진 정도를 측정합니다." valueL={data.front.leftLegAngle} valueR={data.front.rightLegAngle} isAngle />
-                        <InBodyTableRow label="무릎 수평 (후면)" description="후면에서 측정한 좌우 무릎의 높이 차이입니다." value={data.back.kneeHorizontal} />
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* 척추 */}
-                <div>
-                  <h3 className="text-[9px] sidiz-voice-3 text-sidiz-black mb-1 px-1">척추 각도</h3>
-                  <div className="rounded-2xl border border-slate-100 overflow-hidden" style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                    <table className="w-full text-[8px] border-collapse">
-                      <thead>
-                        <tr className="bg-sidiz-core-light text-sidiz-dark-gray sidiz-voice-3">
-                          <th className="py-1 px-1 text-left border-b border-r border-slate-200 last:border-r-0">측정 항목</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">측정 수치</th>
-                          <th className="py-1 px-1 text-center border-b border-r border-slate-200 last:border-r-0">정상 범위</th>
-                          <th className="py-1 px-1 text-center border-b border-slate-200">상태(왼/오)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="sidiz-voice-1">
-                        <InBodyDualTableRow label="흉추 각도" description="등뼈(흉추)의 굽은 정도를 나타냅니다." valueL={data.sideLeft.thoracic} valueR={data.sideRight.thoracic} isThoracic />
-                        <InBodyDualTableRow label="요추 각도" description="허리뼈(요추)의 굽은 정도를 나타냅니다." valueL={data.sideLeft.lumbar} valueR={data.sideRight.lumbar} isLumbar />
-                      </tbody>
-                    </table>
-                  </div>
+              {/* 앉음 습관 문제 섹션 */}
+              <div className="p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm flex flex-col">
+                <h4 className="text-[10px] sidiz-voice-3 text-sidiz-black flex items-center gap-1.5 mb-2.5 border-b border-slate-50 pb-2">
+                  <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                  앉음 습관 문제
+                </h4>
+                <ul className="text-[9px] text-sidiz-dark-gray sidiz-voice-1 space-y-1.5 pl-1 mb-3 flex-1">
+                  {analysisResult.sittingHabits.map((h, i) => <li key={i} className="flex gap-2 leading-relaxed"><span>•</span>{h}</li>)}
+                </ul>
+                <div className="flex items-start min-h-[30px] pt-1">
+                  <p className="text-[9px] text-sidiz-black sidiz-voice-1 leading-relaxed">
+                    <span className="text-orange-600 mr-1 font-bold">원인:</span>
+                    {analysisResult.cause}
+                  </p>
                 </div>
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
@@ -428,128 +334,213 @@ const Page2 = ({ data, analysisResult, isPdf }: {
       style={isPdf ? { width: '794px', height: '1123px' } : { width: '100%', maxWidth: '794px', margin: '0 auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
     >
     <div className="px-10 py-8">
-      <div className="flex flex-col gap-4">
-        {/* 종합 체형 분석 결과 */}
+      <div className="flex flex-col gap-6">
+        {/* Detailed Measurement Data (Moved from Page 1) */}
         <section>
-          <div className="flex items-center gap-2 mb-1 border-b-2 border-sidiz-black pb-1">
-            <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">종합 체형 분석 결과</h2>
-          </div>
-          <p className="text-[8px] text-sidiz-medium-gray sidiz-voice-1 mb-3 leading-relaxed">
-            시디즈 의자연구소가 축적한 방대한 사용자 행동 패턴과 체형 데이터를 바탕으로, 당신의 현재 상태를 객관적이고 과학적으로 분석합니다.
-          </p>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-center gap-6 border-b border-slate-100 pb-2">
-              <div className="flex-1">
-                <p className="text-[8px] text-sidiz-medium-gray sidiz-voice-3 uppercase mb-0.5 font-eng tracking-wider">Main Body Type</p>
-                <h3 className="text-[18px] sidiz-voice-3 sidiz-headline text-indigo-600 mb-1">{typeLabels[analysisResult.mainType]}</h3>
-                <p className="text-[10px] text-sidiz-black sidiz-voice-3 leading-tight">
-                  {analysisResult.description}
-                </p>
-              </div>
-              <div className="shrink-0 flex flex-col items-center">
-                <PostureRadarChart data={analysisResult.radarData} isPdf={isPdf} />
-                <p className="text-[7px] text-sidiz-medium-gray sidiz-voice-1 text-center mt-0.5">자세별 균형 분포</p>
-              </div>
-            </div>
-
-            {/* Fixed Illustration/Image Section - Maintained Aspect Ratio */}
-            <div className="my-0.5 flex justify-center w-full bg-white">
-              <img 
-                src={typeImages[analysisResult.mainType]} 
-                alt={typeLabels[analysisResult.mainType]} 
-                className="w-full h-auto max-h-64 object-contain block"
-                referrerPolicy="no-referrer"
-                style={{ minHeight: '200px' }}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-0 mb-0 border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-              {/* 체형 특징 섹션 */}
-              <div className="p-4 flex flex-col bg-white border-r border-slate-200">
-                <div className="flex justify-between items-center mb-2 border-b border-slate-100 pb-2">
-                  <h4 className="text-[10px] sidiz-voice-3 text-sidiz-black flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
-                    체형 특징
-                  </h4>
-                </div>
-                <ul className="text-[9px] text-sidiz-dark-gray sidiz-voice-1 space-y-1.5 pl-1 mb-3 flex-1">
-                  {analysisResult.bodyFeatures.map((f, i) => <li key={i} className="flex gap-2 leading-relaxed"><span>•</span>{f}</li>)}
-                </ul>
-                <div className="pt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                  <p className="text-[9px] text-sidiz-black sidiz-voice-3 leading-relaxed">
-                    <span className="text-indigo-600 mr-1">소견:</span>
-                    {analysisResult.summary}
-                  </p>
-                </div>
-              </div>
-
-              {/* 앉음 습관 문제 섹션 */}
-              <div className="p-4 flex flex-col bg-white">
-                <div className="flex justify-between items-center mb-2 border-b border-slate-100 pb-2">
-                  <h4 className="text-[10px] sidiz-voice-3 text-sidiz-black flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                    앉음 습관 문제
-                  </h4>
-                </div>
-                <ul className="text-[9px] text-sidiz-dark-gray sidiz-voice-1 space-y-1.5 pl-1 mb-3 flex-1">
-                  {analysisResult.sittingHabits.map((h, i) => <li key={i} className="flex gap-2 leading-relaxed"><span>•</span>{h}</li>)}
-                </ul>
-                <div className="pt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                  <p className="text-[9px] text-sidiz-black sidiz-voice-3 leading-relaxed">
-                    <span className="text-orange-600 mr-1">원인:</span>
-                    {analysisResult.cause}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-2.5 bg-indigo-950 text-white rounded-xl">
-              <p className="text-[10px] sidiz-voice-3 leading-tight">
-                <span className="text-indigo-300 mr-2 font-eng tracking-widest">CORE INSIGHT:</span>
-                {analysisResult.coreMessage}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 맞춤형 개선 가이드 */}
-        <section>
-          <div className="flex items-center gap-2 mb-3 border-b-2 border-sidiz-black pb-1">
-            <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">맞춤형 개선 가이드</h2>
+          <div className="flex items-center gap-2 mb-4 border-b-2 border-sidiz-black pb-2">
+            <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black uppercase tracking-tight">상세 측정 데이터 분석</h2>
           </div>
           
-          <div className="grid grid-cols-1 gap-3">
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-              <div className="grid grid-cols-2 gap-10">
-                <div className="pr-6 border-r border-slate-100">
-                  <p className="text-[10px] sidiz-voice-3 text-emerald-600 mb-4 flex items-center gap-1.5 font-bold">
-                    생활 및 교정 습관
-                  </p>
-                  <ul className="text-[10px] text-sidiz-dark-gray sidiz-voice-1 space-y-3 tracking-tighter">
-                    {[...analysisResult.lifeHabits, ...analysisResult.maintenanceStrategy].map((h, i) => (
-                      <li key={i} className="flex gap-2 items-start leading-tight">
-                        <CheckCircle2 size={12} className="mt-0.5 text-emerald-400 shrink-0" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
+          <div className="space-y-6">
+            {/* 1. 상체 정렬 분석 */}
+            <section className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-2 mb-2 border-b border-indigo-100 pb-1.5 h-6">
+                <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full shrink-0" />
+                <h3 className="text-[12px] sidiz-voice-3 font-bold text-indigo-900 leading-none">상체 정렬</h3>
+                <div className={`px-2 h-[16px] rounded-full border flex items-center justify-center shrink-0 ${analysisResult.areaScores.upperBody < 60 ? 'bg-orange-50 border-orange-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                  <span className={`text-[8.5px] font-bold font-eng leading-none ${analysisResult.areaScores.upperBody < 60 ? 'text-orange-600' : 'text-indigo-600'}`}>
+                    {analysisResult.areaScores.upperBody}점
+                  </span>
                 </div>
-                <div className="pl-6">
-                  <p className="text-[10px] sidiz-voice-3 text-rose-500 mb-4 flex items-center gap-1.5 font-bold">
-                    피해야 할 습관
-                  </p>
-                  <ul className="text-[10px] text-sidiz-dark-gray sidiz-voice-1 space-y-3 tracking-tighter">
-                    {analysisResult.avoidHabits.map((h, i) => (
-                      <li key={i} className="flex gap-2 items-start leading-tight">
-                        <AlertCircle size={12} className="mt-0.5 text-rose-400 shrink-0" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <span className="text-[7.5px] text-indigo-400 sidiz-voice-1 ml-auto font-medium self-center">상체 말림 및 거북목 상태</span>
               </div>
-            </div>
+              <p className="text-[8px] text-sidiz-black sidiz-voice-1 mb-3 leading-relaxed px-1">
+                {analysisResult.thematicSummaries.upperBody}
+              </p>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 pl-1">
+                <InBodyDualBarChart 
+                  label="라운드숄더" 
+                  description="어깨가 앞으로 말려 있는 상태"
+                  valueL={data.sideLeft.roundShoulder || 0} 
+                  valueR={data.sideRight.roundShoulder || 0} 
+                  ranges={[0, 30, 45, 60]} 
+                  labels={['정상', '주의', '심각']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  meaning={analysisResult.keyMetrics.find(m => m.label.includes('라운드숄더'))?.meaning}
+                  compact={true}
+                />
+                <InBodyDualBarChart 
+                  label="거북목" 
+                  description="목이 앞으로 나와 있는 상태"
+                  valueL={data.sideLeft.forwardHead || 0} 
+                  valueR={data.sideRight.forwardHead || 0} 
+                  ranges={[0, 40, 50, 60]} 
+                  labels={['정상', '주의', '심각']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  meaning={analysisResult.keyMetrics.find(m => m.label.includes('거북목'))?.meaning}
+                  compact={true}
+                />
+                <InBodyDualBarChart 
+                  label="어깨 기울기" 
+                  description="어깨의 상하 기울어진 정도"
+                  valueL={data.front.leftShoulderSlope || 0} 
+                  valueR={data.front.rightShoulderSlope || 0} 
+                  ranges={[0, 18, 22, 30]} 
+                  labels={['상견', '정상', '하견']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                />
+                <InBodyDualBarChart 
+                  label="흉추 각도" 
+                  description="등뼈(흉추)의 굽은 정도"
+                  valueL={data.sideLeft.thoracic || 0} 
+                  valueR={data.sideRight.thoracic || 0} 
+                  ranges={[20, 35, 45, 60]} 
+                  labels={['주의', '정상', '주의']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                />
+              </div>
+            </section>
+
+            {/* 2. 좌우 균형 분석 */}
+            <section className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-2 mb-2 border-b border-indigo-100 pb-1.5 h-6">
+                <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full shrink-0" />
+                <h3 className="text-[12px] sidiz-voice-3 font-bold text-indigo-900 leading-none">좌우 균형</h3>
+                <div className={`px-2 h-[16px] rounded-full border flex items-center justify-center shrink-0 ${analysisResult.areaScores.leftRight < 60 ? 'bg-orange-50 border-orange-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                  <span className={`text-[8.5px] font-bold font-eng leading-none ${analysisResult.areaScores.leftRight < 60 ? 'text-orange-600' : 'text-indigo-600'}`}>
+                    {analysisResult.areaScores.leftRight}점
+                  </span>
+                </div>
+                <span className="text-[7.5px] text-indigo-400 sidiz-voice-1 ml-auto font-medium self-center">신체 좌우 대칭 및 수평 상태</span>
+              </div>
+              <p className="text-[8px] text-sidiz-black sidiz-voice-1 mb-3 leading-relaxed px-1">
+                {analysisResult.thematicSummaries.asymmetry}
+              </p>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 pl-1">
+                <InBodyPelvisDualBarChart 
+                  label="골반 수평"
+                  description="골반의 좌우 높낮이 차이"
+                  valueF={data.front.pelvisHorizontal}
+                  valueB={data.back.pelvisHorizontal}
+                  ranges={[0, 2, 4, 6]}
+                  labels={['정상', '주의', '심각']}
+                  unit="°"
+                  showHeader={true}
+                  isPdf={isPdf}
+                  meaning={analysisResult.keyMetrics.find(m => m.label.includes('골반 수평'))?.meaning}
+                  compact={true}
+                />
+                <InBodyPelvisDualBarChart 
+                  label="어깨 수평" 
+                  description="어깨의 좌우 높낮이 차이"
+                  valueF={data.front.shoulderHorizontal} 
+                  valueB={data.back.shoulderHorizontal} 
+                  ranges={[0, 2, 4, 6]} 
+                  labels={['정상', '주의', '심각']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                />
+                <InBodySingleBarChart 
+                  label="무릎 수평" 
+                  description="무릎의 좌우 높낮이 차이"
+                  value={data.back.kneeHorizontal} 
+                  ranges={[0, 2, 4, 6]} 
+                  labels={['정상', '주의', '심각']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                  sideLabel="후"
+                />
+              </div>
+            </section>
+
+            {/* 3. 골반 및 요추 분석 */}
+            <section className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-2 mb-2 border-b border-indigo-100 pb-1.5 h-6">
+                <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full shrink-0" />
+                <h3 className="text-[12px] sidiz-voice-3 font-bold text-indigo-900 leading-none">골반 및 요추</h3>
+                <div className={`px-2 h-[16px] rounded-full border flex items-center justify-center shrink-0 ${analysisResult.areaScores.pelvisLumbar < 60 ? 'bg-orange-50 border-orange-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                  <span className={`text-[8.5px] font-bold font-eng leading-none ${analysisResult.areaScores.pelvisLumbar < 60 ? 'text-orange-600' : 'text-indigo-600'}`}>
+                    {analysisResult.areaScores.pelvisLumbar}점
+                  </span>
+                </div>
+                <span className="text-[7.5px] text-indigo-400 sidiz-voice-1 ml-auto font-medium self-center">골반 경사 및 허리 정렬 상태</span>
+              </div>
+              <p className="text-[8px] text-sidiz-black sidiz-voice-1 mb-3 leading-relaxed px-1">
+                {analysisResult.thematicSummaries.pelvisLumbar}
+              </p>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 pl-1">
+                <InBodyDualBarChart 
+                  label="골반 전방경사" 
+                  description="골반이 앞/뒤로 기울어진 정도"
+                  valueL={data.sideLeft.pelvisTilt || 0} 
+                  valueR={data.sideRight.pelvisTilt || 0} 
+                  ranges={[0, 5, 8, 20]} 
+                  labels={['후방경사', '정상', '전방경사']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  meaning={analysisResult.keyMetrics.find(m => m.label.includes('골반 전방경사'))?.meaning}
+                  compact={true}
+                />
+                <InBodyDualBarChart 
+                  label="요추 각도" 
+                  description="허리뼈(요추)의 굽은 정도"
+                  valueL={data.sideLeft.lumbar || 0} 
+                  valueR={data.sideRight.lumbar || 0} 
+                  ranges={[30, 45, 55, 70]} 
+                  labels={['주의', '정상', '주의']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                />
+              </div>
+            </section>
+
+            {/* 4. 하체 정렬 분석 */}
+            <section className="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-2 mb-2 border-b border-indigo-100 pb-1.5 h-6">
+                <div className="w-1.5 h-3.5 bg-indigo-500 rounded-full shrink-0" />
+                <h3 className="text-[12px] sidiz-voice-3 font-bold text-indigo-900 leading-none">하체 정렬</h3>
+                <div className={`px-2 h-[16px] rounded-full border flex items-center justify-center shrink-0 ${analysisResult.areaScores.lowerBody < 60 ? 'bg-orange-50 border-orange-200' : 'bg-indigo-50 border-indigo-100'}`}>
+                  <span className={`text-[8.5px] font-bold font-eng leading-none ${analysisResult.areaScores.lowerBody < 60 ? 'text-orange-600' : 'text-indigo-600'}`}>
+                    {analysisResult.areaScores.lowerBody}점
+                  </span>
+                </div>
+                <span className="text-[7.5px] text-indigo-400 sidiz-voice-1 ml-auto font-medium self-center">다리 정렬 및 무릎 상태</span>
+              </div>
+              <p className="text-[8px] text-sidiz-black sidiz-voice-1 mb-3 leading-relaxed px-1">
+                {analysisResult.thematicSummaries.lowerBody}
+              </p>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 pl-1">
+                <InBodyDualBarChart 
+                  label="다리 각도" 
+                  description="다리의 정렬 상태"
+                  valueL={data.front.leftLegAngle || 0} 
+                  valueR={data.front.rightLegAngle || 0} 
+                  ranges={[-10, -3, 3, 10]} 
+                  labels={['심각', '정상', '심각']}
+                  unit="°" 
+                  showHeader={true}
+                  isPdf={isPdf}
+                  compact={true}
+                />
+              </div>
+            </section>
           </div>
         </section>
       </div>
@@ -579,39 +570,77 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
     >
     <div className="px-12 py-6">
       <div className="flex flex-col gap-6">
+        {/* 맞춤형 개선 가이드 (Moved from Page 2) */}
+        <section className="mt-4">
+          <div className="flex items-center gap-2 mb-4 border-b-2 border-sidiz-black pb-2">
+            <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">맞춤형 개선 가이드</h2>
+          </div>
+          
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="grid grid-cols-2 gap-10">
+              <div className="pr-6 border-r border-slate-100">
+                <p className="text-[10px] sidiz-voice-3 text-emerald-600 mb-4 flex items-center gap-1.5 font-bold">
+                  생활 및 교정 습관
+                </p>
+                <ul className="text-[10px] text-sidiz-dark-gray sidiz-voice-1 space-y-3 tracking-tighter">
+                  {[...analysisResult.lifeHabits, ...analysisResult.maintenanceStrategy].map((h, i) => (
+                    <li key={i} className="flex gap-2 items-start leading-tight">
+                      <CheckCircle2 size={12} className="mt-0.5 text-emerald-400 shrink-0" />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="pl-6">
+                <p className="text-[10px] sidiz-voice-3 text-rose-500 mb-4 flex items-center gap-1.5 font-bold">
+                  피해야 할 습관
+                </p>
+                <ul className="text-[10px] text-sidiz-dark-gray sidiz-voice-1 space-y-3 tracking-tighter">
+                  {analysisResult.avoidHabits.map((h, i) => (
+                    <li key={i} className="flex gap-2 items-start leading-tight">
+                      <AlertCircle size={12} className="mt-0.5 text-rose-400 shrink-0" />
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 3. 시디즈 솔루션 & 메모 & 제품 추천 */}
         <section>
-          <div className="flex items-center gap-2 mb-3 border-b-2 border-sidiz-black pb-1">
+          <div className="flex items-center gap-2 mb-4 border-b-2 border-sidiz-black pb-2">
             <h2 className="text-xs sidiz-voice-3 sidiz-headline text-sidiz-black">시디즈 솔루션 및 상담 결과</h2>
           </div>
 
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl sidiz-voice-3 text-sidiz-black">Sitting Expert Picks</h3>
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-sm sidiz-voice-3 text-sidiz-black">Sitting Expert Picks</h3>
                 </div>
                 <div className={`grid ${recommendedProducts.length >= 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
                   {recommendedProducts.map((product) => (
-                    <div key={product.id} className="bg-white p-3 rounded-2xl border border-slate-100 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                      <div className="flex items-start gap-3 mb-2">
+                    <div key={product.id} className="bg-white p-2.5 rounded-2xl border border-slate-100 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                      <div className="flex flex-col gap-1.5 mb-1.5 min-h-[100px]">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
-                              <h4 className="text-xl sidiz-voice-3 text-sidiz-black font-eng truncate">{product.name}</h4>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0"></span>
+                              <h4 className="text-[10px] sidiz-voice-3 text-sidiz-black font-eng line-clamp-2 h-[2.4em] leading-tight">{product.name}</h4>
                             </div>
                             {isPdf && (
                               <div className="shrink-0 bg-slate-50 p-0.5 rounded border border-slate-100">
-                                <QRCodeSVG value={product.url} size={28} />
+                                <QRCodeSVG value={product.url} size={24} />
                               </div>
                             )}
                           </div>
-                          <p className="text-[8px] text-sidiz-dark-gray leading-tight sidiz-voice-1 mb-2">{product.description}</p>
+                          <p className="text-[7.5px] text-sidiz-dark-gray leading-tight sidiz-voice-1 mb-1.5 whitespace-normal break-words">{product.description}</p>
                           {product.tip && (
-                            <div className="mt-1 p-2 bg-indigo-50 rounded-lg border-l-4 border-indigo-500 shadow-sm">
-                              <span className="text-[9px] sidiz-voice-3 text-indigo-700 block mb-1 font-bold">SE Tip!</span>
-                              <p className="text-[8px] text-sidiz-black leading-relaxed sidiz-voice-1 font-medium bg-indigo-100/50 px-1 rounded">
+                            <div className="mt-1 p-1.5 bg-indigo-50 rounded-lg border-l-2 border-indigo-500 shadow-sm">
+                              <span className="text-[8px] sidiz-voice-3 text-indigo-700 block mb-0.5 font-bold">SE Tip!</span>
+                              <p className="text-[7.5px] text-sidiz-black leading-relaxed sidiz-voice-1 font-medium bg-[#f0f4ff] px-1 rounded whitespace-normal break-words">
                                 {product.tip}
                               </p>
                             </div>
@@ -619,7 +648,7 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
                         </div>
                       </div>
                       
-                      <div className="mt-auto flex items-center justify-between pt-1.5 border-t border-slate-50">
+                      <div className="mt-auto flex items-center justify-between pt-1 border-t border-slate-50">
                         {!isPdf && (
                           <a 
                             href={product.url} 
@@ -628,7 +657,7 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
                             className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition-colors"
                           >
                             <ShoppingBag size={10} />
-                            <span className="text-[9px] sidiz-voice-3">상세 보기</span>
+                            <span className="text-[8px] sidiz-voice-3">상세 보기</span>
                           </a>
                         )}
                       </div>
@@ -639,20 +668,20 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
             </div>
 
             <div className="col-span-12">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
                   <h3 className="text-sm sidiz-voice-3 text-sidiz-black">전문가 상담 메모</h3>
                 </div>
-                <div className="bg-white p-3 rounded-xl min-h-[80px] border border-slate-100">
-                  <p className="text-[10px] text-sidiz-dark-gray leading-relaxed whitespace-pre-wrap sidiz-voice-1">
+                <div className="bg-white p-2.5 rounded-xl min-h-[60px] border border-slate-100">
+                  <p className="text-[9px] text-sidiz-dark-gray leading-relaxed whitespace-pre-wrap sidiz-voice-1">
                     {memo || "입력된 상담 메모가 없습니다."}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="col-span-12">
-              <div className="bg-indigo-950 text-white p-4 rounded-[32px] relative overflow-hidden shadow-xl">
+            <div className="col-span-12 space-y-4">
+              <div className="bg-indigo-950 text-white p-5 rounded-[32px] relative overflow-hidden shadow-xl">
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full -mr-32 -mt-32 opacity-20 blur-[80px]"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 rounded-full -ml-24 -mb-24 opacity-10 blur-[60px]"></div>
@@ -660,15 +689,45 @@ const Page3 = ({ data, analysisResult, memo, productRecommendation, selectedProd
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-px bg-indigo-500"></div>
-                    <span className="text-[10px] font-eng tracking-[0.2em] text-indigo-400 uppercase font-bold">PROGRESSIVE SITTING EXPERIENCE</span>
+                    <span className="text-[9px] font-eng tracking-[0.2em] text-indigo-400 uppercase font-extrabold text-white">PROGRESSIVE SITTING EXPERIENCE</span>
                   </div>
                   
                   <div className="mb-0">
-                    <h3 className="text-[11px] sidiz-voice-3 leading-relaxed text-indigo-50">
+                    <h3 className="text-[10.5px] sidiz-voice-3 leading-relaxed text-white">
                       시디즈는 최상의 의자 위 경험을 선물합니다.<br />
                       그 경험이 모여 '자기다움'을 찾아가는 여정이 되고,<br />
                       끊임없이 나아가는 이 발전적인 여정에는 끝이 없습니다.
                     </h3>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-lime-700 text-white p-5 rounded-[32px] relative overflow-hidden shadow-xl">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400 rounded-full -mr-32 -mt-32 opacity-20 blur-[80px]"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full -ml-24 -mb-24 opacity-10 blur-[60px]"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-px bg-white/50"></div>
+                    <span className="text-[9px] font-eng tracking-[0.2em] text-white uppercase font-extrabold">SUSTAINABLE SITTING LIFE</span>
+                  </div>
+                  
+                  <div className="mb-0 space-y-2.5">
+                    <div>
+                      <h4 className="text-[11px] sidiz-voice-3 font-bold text-white mb-1">나에게 맞는 앉음의 가치, 더 오래 지속되도록</h4>
+                      <p className="text-[10px] sidiz-voice-1 leading-relaxed text-white font-medium">
+                        당신만의 최적의 시팅에 의자를 아끼고 고치는 습관까지 더해보세요.<br />
+                        이지리페어(Easy Repair)를 통해 건강한 바른 자세와 지구 환경의 가치를 오래도록 이어갈 수 있습니다.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[9.5px] sidiz-voice-1 leading-relaxed text-white">
+                        <span className="font-bold mr-1">💡 이지리페어(Easy Repair)란?</span>
+                        의자 전체를 교체할 필요 없이, 마모되거나 오염된 부품만 개별적으로 구매하여 직접 교체할 수 있는 시디즈의 지속 가능한 솔루션입니다.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -688,38 +747,41 @@ function DynamicScaleHeader({ ranges, labels, unit }: { ranges: number[], labels
   const total = max - min;
 
   return (
-    <div className="relative h-4 w-full flex">
-      {/* Offset to align with bars (L/R label width + gap) */}
-      <div className="w-[14px] shrink-0" /> 
+    <div className="flex items-center gap-2">
+      {/* Spacer matching the side label width (w-5 = 20px) */}
+      <div className="w-5 shrink-0" /> 
       
-      <div className="flex-1 relative">
-        {/* Labels with Ranges */}
-        <div className="absolute bottom-0 inset-x-0 h-4 flex items-end pb-0.5 pointer-events-none">
-          {labels.map((l, i) => {
-            const start = ranges[i];
-            const end = ranges[i + 1];
-            const width = ((end - start) / total) * 100;
-            const left = ((start - min) / total) * 100;
+      {/* Main scale area matching the flex-1 bar area */}
+      <div className="flex-1 relative h-6">
+        <div className="absolute inset-0 flex">
+          {ranges.slice(0, -1).map((r, i) => {
+            const nextR = ranges[i + 1];
+            const width = ((nextR - r) / total) * 100;
             return (
               <div 
                 key={i} 
-                className={`absolute text-[6px] sidiz-voice-3 text-sidiz-medium-gray text-center border-r border-slate-200 last:border-r-0 flex flex-col justify-end leading-none`}
-                style={{ left: `${left}%`, width: `${width}%` }}
+                className="h-full relative border-l border-slate-200 flex flex-col items-center justify-end pb-0.5"
+                style={{ width: `${width}%` }}
               >
-                <span className="font-bold">{l}</span>
-                <span className="text-[6px] opacity-80">{start}-{end}{unit}</span>
+                <div className="flex flex-col items-center whitespace-nowrap">
+                  <span className="text-[7px] sidiz-voice-3 text-sidiz-black font-bold leading-none">{labels[i]}</span>
+                  <span className="text-[6px] text-sidiz-medium-gray font-eng leading-none mt-0.5">{r}-{nextR}{unit}</span>
+                </div>
               </div>
             );
           })}
+          {/* Last divider line */}
+          <div className="h-full border-l border-slate-200" />
         </div>
       </div>
-      {/* Right offset for values (w-16 label + gap-1.5) */}
-      <div className="w-[70px] shrink-0" />
+
+      {/* Spacer matching the right value area (w-14 = 56px) */}
+      <div className="w-14 shrink-0" />
     </div>
   );
 }
 
-function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels, unit, showHeader = false, isPdf, meaning }: { 
+function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels, unit, showHeader = false, isPdf, meaning, compact }: { 
   label: string; 
   description?: string;
   valueL: number; 
@@ -730,40 +792,58 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
   showHeader?: boolean;
   isPdf?: boolean;
   meaning?: string;
+  compact?: boolean;
 }) {
   const min = ranges[0];
   const max = ranges[ranges.length - 1];
   const total = max - min;
   
   const getBarColor = (val: number) => {
-    if (val < ranges[1]) return '#343638'; // Normal (sidiz-black)
-    if (val < ranges[2]) return '#f59e0b'; // Caution (amber-500)
-    return '#f43f5e'; // Severe (rose-500)
+    let segmentIndex = -1;
+    for (let i = 0; i < ranges.length - 1; i++) {
+      if (val >= ranges[i] && val < ranges[i+1]) {
+        segmentIndex = i;
+        break;
+      }
+    }
+    if (segmentIndex === -1) {
+      if (val < ranges[0]) segmentIndex = 0;
+      else segmentIndex = ranges.length - 2;
+    }
+    
+    const labelText = labels[segmentIndex] || '';
+    if (labelText.includes('정상') || labelText.includes('표준')) return '#343638';
+    if (labelText.includes('심각')) return '#f43f5e';
+    return '#f59e0b'; // 주의, 상견, 하견, 전방경사 등
   };
 
-  const isAbnormal = valueL >= ranges[1] || valueR >= ranges[1];
-  const tipData = Object.entries(CHAIR_TIPS).find(([key]) => label.includes(key))?.[1];
-
-  const renderBar = (val: number, side: '왼' | '오') => {
+  const renderBar = (val: number, side: string) => {
     const percentage = Math.min(100, Math.max(0, ((val - min) / total) * 100));
+    const containerHeight = compact ? 'h-4' : 'h-5';
     
     return (
       <div className="flex flex-col w-full">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[8px] sidiz-voice-3 text-sidiz-medium-gray w-2 shrink-0">{side}</span>
-          <div className="flex-1 h-5 flex flex-col justify-center relative">
+        <div className="flex items-center gap-2">
+          <div className={`w-5 shrink-0 flex items-center justify-center ${containerHeight}`}>
+            <span className="text-[8px] sidiz-voice-3 text-sidiz-medium-gray text-center leading-none -translate-y-px">{side}</span>
+          </div>
+          <div className={`flex-1 ${containerHeight} flex flex-col justify-center relative`}>
             {/* Background Zones */}
             <div className="absolute inset-0 flex">
               {ranges.slice(0, -1).map((r, i) => {
                 const start = ranges[i];
                 const end = ranges[i + 1];
                 const width = ((end - start) / total) * 100;
-                const bgColors = ['#f8fafc', '#fff7ed', '#fff1f2']; // slate-50, orange-50, rose-50
+                const l = labels[i] || '';
+                let bgColor = '#f8fafc';
+                if (l.includes('심각')) bgColor = '#fff1f2';
+                else if (!l.includes('정상') && !l.includes('표준')) bgColor = '#fff7ed';
+                
                 return (
                   <div 
                     key={i} 
                     className="h-full border-r border-slate-200" 
-                    style={{ width: `${width}%`, backgroundColor: bgColors[i] || '#f8fafc' }} 
+                    style={{ width: `${width}%`, backgroundColor: bgColor }} 
                   />
                 );
               })}
@@ -781,17 +861,16 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
             </div>
 
             {/* The Bar */}
-            <div className="relative h-2 w-full bg-transparent">
+            <div className={`relative ${compact ? 'h-1.5' : 'h-2'} w-full bg-transparent`}>
               <div 
                 className={`absolute left-0 top-0 bottom-0 ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
                 style={{ width: `${percentage}%`, backgroundColor: getBarColor(val), boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
               />
             </div>
           </div>
-          {/* Value Indicator - Moved to the right side and left-aligned */}
-          <div className="w-16 text-left shrink-0">
-            <span className="text-[9px] sidiz-voice-3 font-eng text-sidiz-black leading-tight block">{(val?.toFixed(1) || '-')}</span>
-            <span className="text-[6px] text-sidiz-medium-gray block -mt-0.5">{unit}</span>
+          <div className={`w-14 text-right shrink-0 flex items-center justify-end gap-1 ${containerHeight}`}>
+            <span className={`${compact ? 'text-[8px]' : 'text-[9px]'} sidiz-voice-3 font-eng text-sidiz-black leading-none tabular-nums`}>{(val?.toFixed(1) || '-')}</span>
+            <span className="text-[7px] text-sidiz-medium-gray sidiz-voice-3 leading-none">{unit}</span>
           </div>
         </div>
       </div>
@@ -799,9 +878,9 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
   };
 
   return (
-    <div className="grid grid-cols-12 gap-3 items-start py-2 border-b border-slate-50">
+    <div className={`grid grid-cols-12 gap-3 items-start ${compact ? 'py-1' : 'py-2'}`}>
       <div className="col-span-3">
-        <div className="text-[10px] sidiz-voice-3 text-sidiz-black font-bold leading-tight">{label}</div>
+        <div className={`${compact ? 'text-[9px]' : 'text-[10px]'} sidiz-voice-3 text-sidiz-black font-bold leading-tight`}>{label}</div>
         {description && <div className="text-[7px] text-sidiz-medium-gray sidiz-voice-1 leading-tight mt-0.5">{description}</div>}
       </div>
       <div className="col-span-9">
@@ -810,55 +889,30 @@ function InBodyDualBarChart({ label, description, valueL, valueR, ranges, labels
             <DynamicScaleHeader ranges={ranges} labels={labels} unit={unit} />
           </div>
         )}
-        <div className="flex flex-col gap-1">
+        <div className={`flex flex-col ${compact ? 'gap-0.5' : 'gap-1'}`}>
           {renderBar(valueL, '왼')}
           {renderBar(valueR, '오')}
         </div>
         
-        {/* Fixed height container for meaning and tips */}
-        <div className="mt-1.5 min-h-[75px] flex flex-col gap-1">
-          {meaning ? (
+        {meaning && (
+          <div className={`${compact ? 'mt-1' : 'mt-1.5'} flex flex-col gap-1`}>
             <div className="px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-[8px] text-sidiz-medium-gray sidiz-voice-1 leading-tight italic">
-                {meaning}
+              <p className={`${compact ? 'text-[7px]' : 'text-[8px]'} text-sidiz-medium-gray sidiz-voice-1 leading-tight italic whitespace-pre-line`}>
+                {meaning.split('\n').map((line, i) => (
+                  <span key={i} className={line.startsWith('#') ? `block mt-0.5 font-bold text-indigo-600 not-italic` : ''}>
+                    {line.startsWith('#') ? line.substring(1) : line}
+                  </span>
+                ))}
               </p>
             </div>
-          ) : (
-            <div className="px-2 py-1 bg-transparent border border-transparent">
-              <p className="text-[8px] text-transparent leading-tight italic">Spacer</p>
-            </div>
-          )}
-          
-          {tipData ? (
-            <div className="p-1.5 bg-indigo-50 rounded-lg border-l-2 border-indigo-500 shadow-sm">
-              <div className="flex items-center gap-1 mb-0.5">
-                <Armchair size={8} className="text-indigo-500" />
-                <span className="text-[7px] sidiz-voice-3 text-indigo-700 font-bold tracking-tight">의자 고르는 Tip!</span>
-              </div>
-              <div className="bg-white/50 p-1 rounded border border-indigo-100/50">
-                <p className="text-[7px] text-sidiz-black leading-tight sidiz-voice-1 font-bold mb-0.5">
-                  {tipData.title}
-                </p>
-                <ul className="space-y-0">
-                  {tipData.items.map((item, idx) => (
-                    <li key={idx} className="text-[6px] text-sidiz-dark-gray sidiz-voice-1 flex items-start gap-1">
-                      <span className="text-indigo-400 shrink-0">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <div className="p-1.5 bg-transparent border-l-2 border-transparent" />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, labels, unit, showHeader = false, isPdf, meaning }: { 
+function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, labels, unit, showHeader = false, isPdf, meaning, compact }: { 
   label: string; 
   description?: string;
   valueF: any; 
@@ -869,43 +923,62 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
   showHeader?: boolean;
   isPdf?: boolean;
   meaning?: string;
+  compact?: boolean;
 }) {
   const min = ranges[0];
   const max = ranges[ranges.length - 1];
   const total = max - min;
   
   const getBarColor = (val: number) => {
-    if (val < ranges[1]) return '#343638'; // Normal (sidiz-black)
-    if (val < ranges[2]) return '#f59e0b'; // Caution (amber-500)
-    return '#f43f5e'; // Severe (rose-500)
+    let segmentIndex = -1;
+    for (let i = 0; i < ranges.length - 1; i++) {
+      if (val >= ranges[i] && val < ranges[i+1]) {
+        segmentIndex = i;
+        break;
+      }
+    }
+    if (segmentIndex === -1) {
+      if (val < ranges[0]) segmentIndex = 0;
+      else segmentIndex = ranges.length - 2;
+    }
+    
+    const labelText = labels[segmentIndex] || '';
+    if (labelText.includes('정상') || labelText.includes('표준')) return '#343638';
+    if (labelText.includes('심각')) return '#f43f5e';
+    return '#f59e0b';
   };
-
-  const isAbnormal = (valueF?.value >= ranges[1]) || (valueB?.value >= ranges[1]);
-  const tipData = Object.entries(CHAIR_TIPS).find(([key]) => label.includes(key))?.[1];
 
   const renderBar = (valObj: any, sideLabel: string) => {
     if (!valObj) return <div className="flex-1" />;
-    const val = valObj.value;
+    const rawVal = valObj.value;
     const dir = valObj.direction;
+    // If ranges start with a negative number, assume we want a signed scale
+    const val = (ranges[0] < 0 && (dir === 'L' || dir === '왼')) ? -rawVal : rawVal;
     const percentage = Math.min(100, Math.max(0, ((val - min) / total) * 100));
+    const containerHeight = compact ? 'h-4' : 'h-5';
     
     return (
       <div className="flex flex-col w-full">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[8px] sidiz-voice-3 text-sidiz-medium-gray w-2 shrink-0">{sideLabel}</span>
-          <div className="flex-1 h-5 flex flex-col justify-center relative">
+        <div className="flex items-center gap-2">
+          <div className={`w-5 shrink-0 flex items-center justify-center ${containerHeight}`}>
+            <span className="text-[8px] sidiz-voice-3 text-sidiz-medium-gray text-center leading-none -translate-y-px">{sideLabel}</span>
+          </div>
+          <div className={`flex-1 ${containerHeight} flex flex-col justify-center relative`}>
             {/* Background Zones */}
             <div className="absolute inset-0 flex">
               {ranges.slice(0, -1).map((r, i) => {
                 const start = ranges[i];
                 const end = ranges[i + 1];
                 const width = ((end - start) / total) * 100;
-                const bgColors = ['#f8fafc', '#fff7ed', '#fff1f2']; // slate-50, orange-50, rose-50
+                const l = labels[i] || '';
+                let bgColor = '#f8fafc';
+                if (l.includes('심각')) bgColor = '#fff1f2';
+                else if (!l.includes('정상') && !l.includes('표준')) bgColor = '#fff7ed';
                 return (
                   <div 
                     key={i} 
                     className="h-full border-r border-slate-200" 
-                    style={{ width: `${width}%`, backgroundColor: bgColors[i] || '#f8fafc' }} 
+                    style={{ width: `${width}%`, backgroundColor: bgColor }} 
                   />
                 );
               })}
@@ -923,20 +996,23 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
             </div>
 
             {/* The Bar */}
-            <div className="relative h-2 w-full bg-transparent">
+            <div className={`relative ${compact ? 'h-1.5' : 'h-2'} w-full bg-transparent`}>
               <div 
                 className={`absolute left-0 top-0 bottom-0 ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
                 style={{ width: `${percentage}%`, backgroundColor: getBarColor(val), boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
               />
             </div>
           </div>
-          <div className="w-16 text-left shrink-0 leading-[1.1]">
-            <span className="text-[8px] sidiz-voice-3 text-sidiz-black block">
+          <div className={`w-14 text-right shrink-0 flex flex-col items-end justify-center ${containerHeight}`}>
+            <span className={`${compact ? 'text-[7px]' : 'text-[8px]'} sidiz-voice-3 text-sidiz-black block leading-none`}>
               {dir === 'L' || dir === '왼' ? '왼쪽' : dir === 'R' || dir === '오' ? '오른쪽' : dir === 'F' || dir === '전' ? '전면' : '후면'}
             </span>
-            <span className="text-[8px] sidiz-voice-3 text-sidiz-black block">
-              {dir === 'F' || dir === '전' || dir === 'B' || dir === '후' ? '각도' : '기울임'} {(val?.toFixed(1) || '-')}{unit}
-            </span>
+            <div className="flex items-baseline justify-end gap-0.5 mt-0.5 leading-none">
+              <span className={`${compact ? 'text-[7px]' : 'text-[8px]'} sidiz-voice-3 text-sidiz-black tabular-nums leading-none`}>
+                {(val?.toFixed(1) || '-')}
+              </span>
+              <span className="text-[6px] text-sidiz-medium-gray sidiz-voice-3 leading-none">{unit}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -944,9 +1020,143 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
   };
 
   return (
-    <div className="grid grid-cols-12 gap-3 items-start py-2 border-b border-slate-50">
+    <div className={`grid grid-cols-12 gap-3 items-start ${compact ? 'py-1' : 'py-2'}`}>
       <div className="col-span-3">
-        <div className="text-[10px] sidiz-voice-3 text-sidiz-black font-bold leading-tight">{label}</div>
+        <div className={`${compact ? 'text-[9px]' : 'text-[10px]'} sidiz-voice-3 text-sidiz-black font-bold leading-tight`}>{label}</div>
+        {description && <div className="text-[7px] text-sidiz-medium-gray sidiz-voice-1 leading-tight mt-0.5">{description}</div>}
+      </div>
+      <div className="col-span-9">
+        {showHeader && (
+          <div className="mb-1">
+            <DynamicScaleHeader ranges={ranges} labels={labels} unit={unit} />
+          </div>
+        )}
+        <div className={`flex flex-col ${compact ? 'gap-0.5' : 'gap-1'}`}>
+          {renderBar(valueF, '전')}
+          {renderBar(valueB, '후')}
+        </div>
+        
+        {meaning && (
+          <div className={`${compact ? 'mt-1' : 'mt-1.5'} flex flex-col gap-1`}>
+            <div className="px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">
+              <p className={`${compact ? 'text-[7px]' : 'text-[8px]'} text-sidiz-medium-gray sidiz-voice-1 leading-tight italic whitespace-pre-line`}>
+                {meaning.split('\n').map((line, i) => (
+                  <span key={i} className={line.startsWith('#') ? `block mt-0.5 font-bold text-indigo-600 not-italic` : ''}>
+                    {line.startsWith('#') ? line.substring(1) : line}
+                  </span>
+                ))}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InBodySingleBarChart({ label, description, value, ranges, labels, unit, showHeader = false, isPdf, meaning, compact, sideLabel = '측정' }: { 
+  label: string; 
+  description?: string;
+  value: any; 
+  ranges: number[]; 
+  labels: string[];
+  unit: string;
+  showHeader?: boolean;
+  isPdf?: boolean;
+  meaning?: string;
+  compact?: boolean;
+  sideLabel?: string;
+}) {
+  const min = ranges[0];
+  const max = ranges[ranges.length - 1];
+  const total = max - min;
+  
+  const getBarColor = (val: number) => {
+    let segmentIndex = -1;
+    for (let i = 0; i < ranges.length - 1; i++) {
+      if (val >= ranges[i] && val < ranges[i+1]) {
+        segmentIndex = i;
+        break;
+      }
+    }
+    if (segmentIndex === -1) {
+      if (val < ranges[0]) segmentIndex = 0;
+      else segmentIndex = ranges.length - 2;
+    }
+    
+    const labelText = labels[segmentIndex] || '';
+    if (labelText.includes('정상') || labelText.includes('표준')) return '#343638';
+    if (labelText.includes('심각')) return '#f43f5e';
+    return '#f59e0b';
+  };
+
+  const renderBar = (valObj: any) => {
+    const rawVal = typeof valObj === 'object' ? valObj.value : valObj;
+    const dir = typeof valObj === 'object' ? valObj.direction : null;
+    // If ranges start with a negative number, assume we want a signed scale
+    const val = (ranges[0] < 0 && (dir === 'L' || dir === '왼')) ? -rawVal : rawVal;
+    const percentage = Math.min(100, Math.max(0, ((val - min) / total) * 100));
+    const containerHeight = compact ? 'h-4' : 'h-5';
+    
+    return (
+      <div className="flex flex-col w-full">
+        <div className="flex items-center gap-2">
+          <div className={`w-5 shrink-0 flex items-center justify-center ${containerHeight}`}>
+            <span className="text-[8px] sidiz-voice-3 text-sidiz-medium-gray text-center leading-none -translate-y-px">{sideLabel}</span>
+          </div>
+          <div className={`flex-1 ${containerHeight} flex flex-col justify-center relative`}>
+            {/* Background Zones */}
+            <div className="absolute inset-0 flex">
+              {ranges.slice(0, -1).map((r, i) => {
+                const start = ranges[i];
+                const end = ranges[i + 1];
+                const width = ((end - start) / total) * 100;
+                const l = labels[i] || '';
+                let bgColor = '#f8fafc';
+                if (l.includes('심각')) bgColor = '#fff1f2';
+                else if (!l.includes('정상') && !l.includes('표준')) bgColor = '#fff7ed';
+                return (
+                  <div 
+                    key={i} 
+                    className="h-full border-r border-slate-200" 
+                    style={{ width: `${width}%`, backgroundColor: bgColor }} 
+                  />
+                );
+              })}
+            </div>
+            
+            {/* Scale Markers */}
+            <div className="absolute inset-0 flex pointer-events-none">
+              {ranges.map((r, i) => (
+                <div 
+                  key={i} 
+                  className="h-full absolute" 
+                  style={{ left: `${((r - min) / total) * 100}%`, borderLeft: '1px solid rgba(255, 255, 255, 0.4)' }} 
+                />
+              ))}
+            </div>
+
+            {/* The Bar */}
+            <div className={`relative ${compact ? 'h-1.5' : 'h-2'} w-full bg-transparent`}>
+              <div 
+                className={`absolute left-0 top-0 bottom-0 ${isPdf ? '' : 'transition-all duration-700'} rounded-full z-10`}
+                style={{ width: `${percentage}%`, backgroundColor: getBarColor(val), boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
+              />
+            </div>
+          </div>
+          <div className={`w-14 text-right shrink-0 flex items-center justify-end gap-1 ${containerHeight}`}>
+            <span className={`${compact ? 'text-[8px]' : 'text-[9px]'} sidiz-voice-3 font-eng text-sidiz-black leading-none tabular-nums`}>{(val?.toFixed(1) || '-')}</span>
+            <span className="text-[7px] text-sidiz-medium-gray sidiz-voice-3 leading-none">{unit}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className={`grid grid-cols-12 gap-3 items-start ${compact ? 'py-1' : 'py-2'}`}>
+      <div className="col-span-3">
+        <div className={`${compact ? 'text-[9px]' : 'text-[10px]'} sidiz-voice-3 text-sidiz-black font-bold leading-tight`}>{label}</div>
         {description && <div className="text-[7px] text-sidiz-medium-gray sidiz-voice-1 leading-tight mt-0.5">{description}</div>}
       </div>
       <div className="col-span-9">
@@ -956,48 +1166,22 @@ function InBodyPelvisDualBarChart({ label, description, valueF, valueB, ranges, 
           </div>
         )}
         <div className="flex flex-col gap-1">
-          {renderBar(valueF, '전')}
-          {renderBar(valueB, '후')}
+          {renderBar(value)}
         </div>
         
-        {/* Fixed height container for meaning and tips */}
-        <div className="mt-1.5 min-h-[75px] flex flex-col gap-1">
-          {meaning ? (
+        {meaning && (
+          <div className={`${compact ? 'mt-1' : 'mt-1.5'} flex flex-col gap-1`}>
             <div className="px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-[8px] text-sidiz-medium-gray sidiz-voice-1 leading-tight italic">
-                {meaning}
+              <p className={`${compact ? 'text-[7px]' : 'text-[8px]'} text-sidiz-medium-gray sidiz-voice-1 leading-tight italic whitespace-pre-line`}>
+                {meaning.split('\n').map((line, i) => (
+                  <span key={i} className={line.startsWith('#') ? `block mt-0.5 font-bold text-indigo-600 not-italic` : ''}>
+                    {line.startsWith('#') ? line.substring(1) : line}
+                  </span>
+                ))}
               </p>
             </div>
-          ) : (
-            <div className="px-2 py-1 bg-transparent border border-transparent">
-              <p className="text-[8px] text-transparent leading-tight italic">Spacer</p>
-            </div>
-          )}
-          
-          {tipData ? (
-            <div className="p-1.5 bg-indigo-50 rounded-lg border-l-2 border-indigo-500 shadow-sm">
-              <div className="flex items-center gap-1 mb-0.5">
-                <Armchair size={8} className="text-indigo-500" />
-                <span className="text-[7px] sidiz-voice-3 text-indigo-700 font-bold tracking-tight">의자 고르는 Tip!</span>
-              </div>
-              <div className="bg-white/50 p-1 rounded border border-indigo-100/50">
-                <p className="text-[7px] text-sidiz-black leading-tight sidiz-voice-1 font-bold mb-0.5">
-                  {tipData.title}
-                </p>
-                <ul className="space-y-0">
-                  {tipData.items.map((item, idx) => (
-                    <li key={idx} className="text-[6px] text-sidiz-dark-gray sidiz-voice-1 flex items-start gap-1">
-                      <span className="text-indigo-400 shrink-0">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <div className="p-1.5 bg-transparent border-l-2 border-transparent" />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -96,6 +96,18 @@ export interface AnalysisResult {
   mixedTrend?: string;
   hasAsymmetryBadge: boolean;
   overallScore: number;
+  areaScores: {
+    upperBody: number;
+    leftRight: number;
+    pelvisLumbar: number;
+    lowerBody: number;
+  };
+  thematicSummaries: {
+    upperBody: string;
+    asymmetry: string;
+    pelvisLumbar: string;
+    lowerBody: string;
+  };
   recommendedProductIds: string[];
   recommendedAccessoryIds: string[];
 }

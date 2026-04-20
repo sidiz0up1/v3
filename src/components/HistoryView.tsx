@@ -27,10 +27,7 @@ export const HistoryView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedStore, setSelectedStore] = useState<string>('all');
   const [stores, setStores] = useState<Store[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -41,10 +38,13 @@ export const HistoryView: React.FC = () => {
     setError(null);
     
     try {
+      console.log('HistoryView: Fetching records and stores...');
       const [reportsData, storesData] = await Promise.all([
         storageService.getReports(),
-        Promise.resolve(storageService.getStores())
+        storageService.getStores()
       ]);
+      console.log('HistoryView: Reports fetched:', reportsData.length);
+      console.log('HistoryView: Stores fetched:', storesData.length);
       setRecords(reportsData);
       setStores(storesData);
     } catch (err: any) {

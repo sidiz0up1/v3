@@ -34,7 +34,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { toPng } from 'html-to-image';
+import { toJpeg } from 'html-to-image';
 import { getSupabase } from './lib/supabase';
 
 import { storageService } from './services/storageService';
@@ -143,7 +143,9 @@ export default function App() {
 
   useEffect(() => {
     const fetchStores = async () => {
+      console.log('App: Fetching stores...');
       const data = await storageService.getStores();
+      console.log('App: Stores fetched:', data);
       setStores(data);
       if (data.length > 0 && !selectedStore) {
         setSelectedStore(data[0].name);
@@ -251,16 +253,25 @@ export default function App() {
   };
 
   const handlePrint = async () => {
+    const pageIds = ['pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
+    
+    // First, verify all elements are present
+    const missing = pageIds.filter(id => !document.getElementById(id));
+    if (missing.length > 0) {
+      alert(`오류: 다음 요소를 찾을 수 없습니다: ${missing.join(', ')}. 다시 시도하거나 창을 새로고침 해주세요.`);
+      return;
+    }
+
     const btn = document.activeElement as HTMLButtonElement;
     const originalText = btn ? btn.innerText : '';
     if (btn) {
       btn.disabled = true;
-      btn.innerText = 'PDF 생성 중...';
+      btn.innerText = 'PDF 준비 중...';
     }
 
     try {
-      // Wait longer to ensure all charts and images are fully rendered
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // 1. Give the browser a moment to ensure hidden items are in DOM
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -269,100 +280,168 @@ export default function App() {
         compress: true
       });
 
-      const pageIds = ['pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
-      
+      // Ensure container is perfectly prepared in the real DOM for capture
+      const realContainer = document.getElementById('pdf-hidden-container');
+      if (realContainer) {
+        realContainer.style.position = 'fixed';
+        realContainer.style.left = '0';
+        realContainer.style.top = '0';
+        realContainer.style.visibility = 'visible';
+        realContainer.style.opacity = '1';
+        realContainer.style.zIndex = '999999';
+        realContainer.style.backgroundColor = 'white';
+        realContainer.style.display = 'block';
+      }
+
+      // Increase wait to ensure all images and fonts are primed
+      await new Promise(resolve => setTimeout(resolve, 6000));
+
+      // Utility to convert image to data URL to avoid [object Event] in html-to-image
+      const convertImagesToDataUrls = async (container: HTMLElement) => {
+        const images = container.getElementsByTagName('img');
+        const promises = Array.from(images).map(async (img) => {
+          if (img.src.startsWith('data:')) return;
+          
+          // Try fetching with absolute URL first
+          const srcUrl = img.src;
+          try {
+            const response = await fetch(srcUrl, { mode: 'cors' });
+            if (response.ok) {
+              const blob = await response.blob();
+              return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  img.src = reader.result as string;
+                  resolve(null);
+                };
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(blob);
+              });
+            }
+          } catch (e) {
+            console.warn('Fetch failed for pre-cache, trying canvas fallback:', srcUrl, e);
+          }
+
+          // Canvas fallback for same-origin or already-loaded cross-origin images
+          try {
+            if (img.complete && img.naturalWidth > 0) {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth;
+              canvas.height = img.naturalHeight;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                img.src = canvas.toDataURL('image/png');
+              }
+            }
+          } catch (e) {
+            console.warn('Canvas fallback failed:', srcUrl, e);
+          }
+        });
+        await Promise.all(promises);
+      };
+
+      if (realContainer) {
+        await convertImagesToDataUrls(realContainer);
+      }
+
       for (let i = 0; i < pageIds.length; i++) {
         const pageId = pageIds[i];
         const element = document.getElementById(pageId);
+        if (!element) continue;
+
+        if (btn) btn.innerText = `결과 리포트 생성 중 (${i + 1}/3)...`;
         
-        if (!element) {
-          throw new Error(`${pageId} 요소를 찾을 수 없습니다.`);
-        }
+        try {
+          console.log(`Capturing ${pageId}...`);
+          
+          // Use a very stable configuration for toJpeg. 
+          // imagePlaceholder prevents [object Event] on failed image loads.
+          // skipFonts + cacheBust + manual image pre-caching ensures maximum success.
+          const dataUrl = await toJpeg(element, {
+            quality: 0.9,
+            backgroundColor: '#ffffff',
+            pixelRatio: 1.5,
+            skipFonts: true,
+            cacheBust: true,
+            imagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', // Transparent pixel fallback
+            style: {
+              visibility: 'visible',
+              opacity: '1',
+              display: 'block'
+            }
+          });
 
-        // Wait a bit for each page to ensure rendering is complete
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Capture Page using html-to-image (better support for modern CSS like oklch)
-        const dataUrl = await toPng(element, {
-          quality: 0.95,
-          pixelRatio: 2,
-          cacheBust: true,
-          backgroundColor: '#ffffff',
-          style: {
-            visibility: 'visible',
-            display: 'block',
-            left: '0',
-            top: '0',
+          if (!dataUrl || dataUrl === 'data:,') {
+            throw new Error('이미지 데이터 생성 실패');
           }
-        });
-        
-        if (!dataUrl || dataUrl === 'data:,') {
-          throw new Error(`${pageId} 캡처에 실패했습니다.`);
-        }
 
-        if (i > 0) pdf.addPage();
-        pdf.addImage(dataUrl, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
-        
-        // Small delay between pages to prevent memory issues
-        await new Promise(resolve => setTimeout(resolve, 500));
+          if (i > 0) pdf.addPage();
+          pdf.addImage(dataUrl, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+          console.log(`${pageId} captured successfully`);
+        } catch (captureErr: any) {
+          console.error(`Page ${i + 1} capture failure detail:`, captureErr);
+          // If it's still [object Event], it might be helpful to see the type
+          const errorType = captureErr instanceof Event ? `Event type: ${captureErr.type}` : '';
+          const msg = captureErr instanceof Error ? captureErr.message : (errorType || String(captureErr));
+          throw new Error(`페이지 ${i + 1} 리포트 생성 중 오류: ${msg}`);
+        }
       }
 
-      pdf.save(`바디체크_체형분석보고서_${new Date().toISOString().split('T')[0]}.pdf`);
+      if (realContainer) {
+        realContainer.style.display = 'none';
+      }
 
-      // Storage Integration
-      try {
-        const supabase = getSupabase();
-        let publicUrl = '';
+      console.log('Saving PDF');
+      pdf.save(`바디체크_분석보고서_${new Date().toISOString().slice(0, 10)}.pdf`);
 
-        if (supabase) {
+      // 2. Storage Integration
+      if (btn) btn.innerText = '결과 저장 중...';
+      
+      const supabase = getSupabase();
+      let publicUrl = '';
+
+      if (supabase) {
+        try {
           const pdfBlob = pdf.output('blob');
-          const timestamp = Date.now();
-          const fileName = `report_${timestamp}.pdf`;
+          const fileName = `report_${Date.now()}.pdf`;
 
-          // 1. Upload PDF to Storage
-          const { error: storageError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('reports')
             .upload(fileName, pdfBlob, {
               contentType: 'application/pdf',
-              cacheControl: '3600',
               upsert: true
             });
 
-          if (storageError) {
-            console.warn('Supabase Storage upload failed:', storageError.message);
-          } else {
-            // 2. Get Public URL
+          if (!uploadError) {
             const { data: { publicUrl: url } } = supabase.storage
               .from('reports')
               .getPublicUrl(fileName);
             publicUrl = url;
           }
+        } catch (sErr) {
+          console.warn('Storage Upload Error:', sErr);
         }
-
-        // 3. Save Data using storageService (handles both Supabase and LocalStorage)
-        const { success, error: saveError } = await storageService.saveReport(
-          data.userInfo.name,
-          data.userInfo,
-          data,
-          analysisResult,
-          publicUrl,
-          selectedStore
-        );
-
-        if (success) {
-          console.log('Data successfully saved.');
-          alert('분석 결과가 성공적으로 저장되었습니다.');
-        } else {
-          console.warn('Data save failed:', saveError);
-          alert(`데이터 저장 중 문제가 발생했습니다: ${saveError}`);
-        }
-      } catch (err) {
-        console.error('Storage integration error:', err);
       }
-      
-    } catch (e) {
-      console.error('PDF generation failed:', e);
-      alert(`PDF 생성 중 오류가 발생했습니다: ${e instanceof Error ? e.message : '알 수 없는 오류'}`);
+
+      const { success, error: saveErr } = await storageService.saveReport(
+        data.userInfo.name,
+        data.userInfo,
+        data,
+        analysisResult,
+        publicUrl,
+        selectedStore
+      );
+
+      if (success) {
+        alert('PDF 다운로드가 완료되었으며 분석 기록이 저장되었습니다.');
+      } else {
+        alert(`PDF는 다운로드되었으나 데이터 저장 중 문제가 발생했습니다: ${saveErr}`);
+      }
+
+    } catch (error) {
+      console.error('PDF Flow Error:', error);
+      alert(`PDF 생성 단계에서 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -582,7 +661,10 @@ export default function App() {
             </button>
             {currentView === 'input' && analysisResult && (
               <button 
-                onClick={handlePrint}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePrint();
+                }}
                 className="flex items-center gap-1.5 px-4 py-1.5 text-xs sidiz-voice-3 text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-md transition-all"
               >
                 <FileText size={14} />
@@ -612,22 +694,28 @@ export default function App() {
                       
                       <div className="flex items-center gap-3">
                         <div className="relative flex items-center gap-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Store</label>
+                          <label htmlFor="store-select" className="text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer">Store</label>
                           <select 
+                            id="store-select"
                             value={selectedStore}
                             onChange={(e) => setSelectedStore(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[200px]"
+                            className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[200px] cursor-pointer appearance-none pr-10 relative"
+                            style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
                           >
-                            {stores.map(store => (
-                              <option key={store.id} value={store.name}>{store.name}</option>
-                            ))}
+                            {stores.length === 0 ? (
+                              <option value="">매장을 등록해주세요</option>
+                            ) : (
+                              stores.map(store => (
+                                <option key={store.id} value={store.name}>{store.name}</option>
+                              ))
+                            )}
                           </select>
                           <button 
                             onClick={(e) => {
                               e.preventDefault();
                               setIsAddingStore(true);
                             }}
-                            className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                            className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors shrink-0"
                             title="매장 관리"
                           >
                             <Plus size={18} />
@@ -809,7 +897,10 @@ export default function App() {
                     </div>
 
                     <button 
-                      onClick={handlePrint}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePrint();
+                      }}
                       disabled={!analysisResult}
                       className={`w-full mt-10 py-4 rounded-2xl sidiz-voice-3 sidiz-headline text-lg shadow-xl transition-all ${
                         analysisResult 
@@ -862,8 +953,21 @@ export default function App() {
         </div>
       </main>
 
-      {/* Hidden PDF Template (Rendered off-screen to ensure styles are applied) */}
-      <div className="fixed pointer-events-none" style={{ left: '-9999px', top: '0', zIndex: -1, opacity: 1 }}>
+      {/* Hidden PDF Template (Rendered off-screen) */}
+      <div 
+        id="pdf-hidden-container"
+        className="no-print"
+        style={{ 
+          position: 'fixed', 
+          left: '-5000px', 
+          top: '0', 
+          width: '210mm', 
+          backgroundColor: 'white',
+          zIndex: -9999,
+          visibility: 'visible',
+          opacity: 1
+        }}
+      >
         {analysisResult && (
           <>
             <div id="pdf-page-1">

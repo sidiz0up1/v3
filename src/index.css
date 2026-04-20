@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;700&display=swap");
 
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-eng: "Outfit", "Centra No2", sans-serif;
 
   --color-indigo-50: #eef2ff;
   --color-indigo-100: #e0e7ff;
@@ -112,6 +114,66 @@
   --color-pink-900: #831843;
   --color-pink-950: #500724;
 
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-50: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
+
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e5e4;
+  --color-stone-300: #d6d3d1;
+  --color-stone-400: #a8a29e;
+  --color-stone-500: #78716c;
+  --color-stone-600: #57534e;
+  --color-stone-700: #44403c;
+  --color-stone-800: #292524;
+  --color-stone-900: #1c1917;
+  --color-stone-950: #0c0a09;
+
   --color-red-50: #fef2f2;
   --color-red-100: #fee2e2;
   --color-red-200: #fecaca;
@@ -194,50 +256,75 @@
   --color-emerald-800: #065f46;
   --color-emerald-900: #064e3b;
   --color-emerald-950: #022c22;
+
+  --color-lime-50: #f7fee7;
+  --color-lime-100: #ecfccb;
+  --color-lime-200: #d9f99d;
+  --color-lime-300: #bef264;
+  --color-lime-400: #a3e635;
+  --color-lime-500: #84cc16;
+  --color-lime-600: #65a30d;
+  --color-lime-700: #4d7c0f;
+  --color-lime-800: #3f6212;
+  --color-lime-900: #365314;
+  --color-lime-950: #1a2e05;
 }
 
 /* SIDIZ Brand Typography System */
 @layer base {
   body {
     font-family: var(--font-sans);
-    letter-spacing: -0.025em; /* Default Korean tracking -25 */
-    transform: scaleX(0.98); /* Default Korean width 98% */
-    transform-origin: center;
+    letter-spacing: -0.025em; /* KR Tracking -25 */
+    font-feature-settings: "palt" 1;
+    /* Pretendard Variable width 98% approximation using letter-spacing and font-stretch if available */
+    font-stretch: 98%;
   }
 
-  /* English/Number specific overrides */
-  :lang(en), [class*="font-mono"], .font-eng {
-    letter-spacing: 0.01em; /* Headline tracking +10 */
-    transform: scaleX(1); /* English width 100% */
+  /* English/Number Base (Body Default) */
+  :lang(en), .font-eng {
+    font-family: var(--font-eng);
+    letter-spacing: -0.01em; /* EN Body Tracking -10 */
+    font-stretch: 98%; /* EN Body Width 98% */
   }
 }
 
 @layer utilities {
-  /* SIDIZ Voice 1: Light (Basic) -> Pretendard Regular */
+  /* SIDIZ Voice 1: Light (Basic) -> KR Regular(400) / EN Light(300) */
   .sidiz-voice-1 {
+    font-weight: 500;
+  }
+  :lang(en) .sidiz-voice-1, .font-eng.sidiz-voice-1 {
     font-weight: 400;
   }
 
-  /* SIDIZ Voice 2: Thin (Hero) -> Pretendard Extra Light */
+  /* SIDIZ Voice 2: Thin (Hero) -> KR Extra Light(200) / EN Thin(100) */
   .sidiz-voice-2 {
-    font-weight: 200;
+    font-weight: 300;
+  }
+  :lang(en) .sidiz-voice-2, .font-eng.sidiz-voice-2 {
+    font-weight: 300;
   }
 
-  /* SIDIZ Voice 3: Book (Structure) -> Pretendard Medium */
+  /* SIDIZ Voice 3: Book (Structure) -> KR Medium(500) / EN Book(450/500) */
   .sidiz-voice-3 {
-    font-weight: 500;
+    font-weight: 600;
+  }
+  :lang(en) .sidiz-voice-3, .font-eng.sidiz-voice-3 {
+    font-weight: 600; /* Outfit SemiBold */
   }
 
-  /* Tracking & Width for Headlines */
+  /* Tracking & Width for Headlines (EN Uppercase) */
   .sidiz-headline {
+    font-family: var(--font-eng);
     letter-spacing: 0.01em; /* +10 */
-    transform: scaleX(1); /* 100% */
+    font-stretch: 100%; /* 100% */
+    text-transform: uppercase;
   }
 
   /* Tracking & Width for Korean Body */
   .sidiz-body-kr {
     letter-spacing: -0.025em; /* -25 */
-    transform: scaleX(0.98); /* 98% */
+    font-stretch: 98%; /* 98% */
   }
 }
 
@@ -287,6 +374,28 @@
   .text-indigo-500 {
     color: #6366f1 !important;
   }
+}
+
+.is-pdf-mode {
+  --color-indigo-600: #4f46e5 !important;
+  --color-sidiz-blue: #003EFF !important;
+  --color-slate-50: #f8fafc !important;
+  --color-indigo-50: #eef2ff !important;
+  --color-orange-500: #f97316 !important;
+  --color-emerald-500: #10b981 !important;
+  
+  /* Fallback for oklab/oklch based variables that might crash parser */
+  --tw-ring-color: #4f46e5 !important;
+  --tw-shadow-color: rgba(0,0,0,0.1) !important;
+  --tw-outline-color: #4f46e5 !important;
+}
+
+/* Force disable animations and transitions in PDF mode */
+.is-pdf-mode * {
+  animation: none !important;
+  transition: none !important;
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
 }
 
 /* Markdown Styling for Consultation Guide */

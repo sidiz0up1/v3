@@ -292,28 +292,38 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
   const rsL = data.sideLeft.roundShoulder || 0;
   const rsR = data.sideRight.roundShoulder || 0;
   // rsMax is already declared above
-  const rsAnalysis = rsMax > 30 
+  const rsAnalysis = (rsMax > 30 
     ? `양쪽 어깨가 앞으로 말려 있습니다. 가슴 근육의 단축과 등 근육 약화가 진행 중이니, 상체 피로도를 낮추기 위한 관리가 필요합니다.`
-    : `양쪽 어깨 정렬이 표준 범위 내에 있어 안정적입니다. 현재의 좋은 균형을 유지하기 위해 주기적인 스트레칭을 권장합니다.`;
+    : `양쪽 어깨 정렬이 표준 범위 내에 있어 안정적입니다. 현재의 좋은 균형을 유지하기 위해 주기적인 스트레칭을 권장합니다.`)
+    + `\n#연관 기능: 등판`;
   addMetric('라운드숄더', `왼 ${(rsL?.toFixed(1) || '-')}° / 오 ${(rsR?.toFixed(1) || '-')}°`, rsMax > 30, '측면', '어깨', rsAnalysis);
 
   // Forward Head Analysis
   const fhL = data.sideLeft.forwardHead || 0;
   const fhR = data.sideRight.forwardHead || 0;
   // fhMax is already declared above
-  const fhAnalysis = fhMax > 40
+  const fhAnalysis = (fhMax > 40
     ? `경추가 전방으로 돌출되어 하중이 집중되고 있습니다. 목 주변 근육의 긴장도가 높으니 경추 정렬 교정을 권장합니다.`
-    : `경추 정렬이 양호하여 목에 가해지는 하중이 적절히 분산되고 있습니다. 모니터 높이 조절 등을 통해 현재 상태를 유지해 보세요.`;
+    : `경추 정렬이 양호하여 목에 가해지는 하중이 적절히 분산되고 있습니다. 모니터 높이 조절 등을 통해 현재 상태를 유지해 보세요.`)
+    + `\n#연관 기능: 헤드레스트`;
   addMetric('거북목', `왼 ${(fhL?.toFixed(1) || '-')}° / 오 ${(fhR?.toFixed(1) || '-')}°`, fhMax > 40, '측면', '목', fhAnalysis);
 
-  // Thoracic Angle Analysis
-  const thL = data.sideLeft.thoracic || 0;
-  const thR = data.sideRight.thoracic || 0;
-  // thMax is already declared above
-  const thAnalysis = thMax > 35
-    ? `흉추의 굽은 정도가 심해져 등이 굽어 있는 상태입니다. 흉추 주변 근육의 긴장도가 높고 호흡이 얕아질 수 있으니, 흉추 가동성 확보와 등 근육 이완이 필요합니다.`
-    : `흉추의 곡선이 표준 범위 내에 있어 상체의 하중을 안정적으로 지지하고 있습니다. 바른 자세 유지를 위해 주기적인 상체 스트레칭을 권장합니다.`;
-  addMetric('흉추 각도', `왼 ${(thL?.toFixed(1) || '-')}° / 오 ${(thR?.toFixed(1) || '-')}°`, thMax > 35, '측면', '등', thAnalysis);
+  // Pelvis Tilt Analysis (Replacing Thoracic Angle)
+  const ptMax = Math.max(ptL, ptR);
+  const ptMin = Math.min(ptL, ptR);
+  const isPtAbnormal = ptMax > 8 || ptMin < 5;
+  let ptAnalysis = '';
+  if (ptMin < 5 && ptMax > 8) {
+    ptAnalysis = `골반의 기울기가 정상 범위를 벗어나 전방경사와 후방경사가 혼재되어 있거나 심한 불균형 상태입니다.`;
+  } else if (ptMin < 5) {
+    ptAnalysis = `골반이 뒤쪽으로 과하게 기울어진 후방경사 상태입니다. 허리 곡선이 평평해져 충격 흡수 능력이 저하될 수 있으니 교정이 필요합니다.`;
+  } else if (ptMax > 8) {
+    ptAnalysis = `골반이 앞쪽으로 과하게 기울어진 전방경사 상태입니다. 허리 곡선이 과하게 꺾여 요추에 부담을 줄 수 있으니 복부와 둔근 강화가 필요합니다.`;
+  } else {
+    ptAnalysis = `골반의 앞뒤 기울기가 표준 범위 내에 있어 허리 정렬이 안정적입니다. 현재의 균형을 유지하기 위해 바른 앉기 습관을 지속해 주세요.`;
+  }
+  ptAnalysis += `\n#연관 기능: 럼버서포트`;
+  addMetric('골반 전방경사', `왼 ${(ptL?.toFixed(1) || '-')}° / 오 ${(ptR?.toFixed(1) || '-')}°`, isPtAbnormal, '측면', '골반', ptAnalysis);
   
   // Pelvis Horizontal Analysis
   const phF = data.front.pelvisHorizontal;
@@ -322,9 +332,10 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
     const phMax = Math.max(Math.abs(phF.value), Math.abs(phB.value));
     const phFDisplay = phF.direction === 'None' ? '-' : `${phF.direction === 'L' ? '왼' : '오'} ${(phF.value?.toFixed(1) || '-')}°`;
     const phBDisplay = phB.direction === 'None' ? '-' : `${phB.direction === 'L' ? '왼' : '오'} ${(phB.value?.toFixed(1) || '-')}°`;
-    const phAnalysis = phMax > 2
+    let phAnalysis = phMax > 2
       ? `골반의 좌우 수평이 맞지 않습니다. 전면에서 ${phFDisplay}, 후면에서 ${phBDisplay}의 불균형이 관찰됩니다. 골반 비대칭은 척추 정렬에 영향을 줄 수 있으므로 교정이 필요합니다.`
       : '골반의 좌우 수평이 전면과 후면 모두 안정적입니다. 현재의 균형 잡힌 상태를 유지하기 위해 바른 자세 습관을 지속해 주세요.';
+    phAnalysis += `\n#연관 기능: 좌판`;
     addMetric('골반 수평', `전면 ${phFDisplay} / 후면 ${phBDisplay}`, phMax > 2, '전/후면', '골반', phAnalysis);
   }
 
@@ -416,17 +427,52 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
 
   const hasAsymmetryBadge = asymmetryCount > 0;
 
-  // Radar Data Calculation using section scores
-  const frontScore = data.front.sectionScore || 0;
-  const sideLeftScore = data.sideLeft.sectionScore || 0;
-  const sideRightScore = data.sideRight.sectionScore || 0;
-  const backScore = data.back.sectionScore || 0;
+  // New Score Calculations for 4 axes - Aggressive Penalties for Threshold Breaches
+  // 1. 좌우 균형 (Left/Right) - Threshold: 2.0
+  const shoulderH = Math.abs(getHorizontalNum(data.front.shoulderHorizontal));
+  const pelvisH = Math.abs(getHorizontalNum(data.front.pelvisHorizontal));
+  const leftRightScore = Math.max(5, 100 - (
+    (shoulderH > 2 ? 40 + (shoulderH - 2) * 10 : shoulderH * 15) + 
+    (pelvisH > 2 ? 40 + (pelvisH - 2) * 12 : pelvisH * 15)
+  ) / 2);
+
+  // 2. 상체 정렬 (Upper Body) - Threshold: Head 40, Shoulder 30
+  const forwardHeadAvg = (fhL + fhR) / 2;
+  const roundShoulderAvg = (rsL + rsR) / 2;
+  const forwardHeadPenalty = forwardHeadAvg > 40 ? 40 + (forwardHeadAvg - 40) * 4 : (forwardHeadAvg * 0.5);
+  const roundShoulderPenalty = roundShoulderAvg > 30 ? 40 + (roundShoulderAvg - 30) * 4 : (roundShoulderAvg * 0.5);
+  const upperBodyScore = Math.max(5, 100 - (forwardHeadPenalty + roundShoulderPenalty) / 2);
+
+  // 3. 골반/요추 (Pelvis/Lumbar) - Threshold: Pelvis 5-8, Lumbar 45-55
+  const ptAvgVal = (ptL + ptR) / 2;
+  const pelvisDev = Math.max(0, Math.abs(ptAvgVal - 6.5) - 1.5);
+  const pelvisPenalty = pelvisDev > 0 ? 35 + (pelvisDev * 8) : 0;
+  
+  const lumAvgVal = (lumL + lumR) / 2;
+  const lumbarDev = Math.max(0, Math.abs(lumAvgVal - 50) - 5);
+  const lumbarPenalty = lumbarDev > 0 ? 35 + (lumbarDev * 4) : 0;
+  
+  const pelvisLumbarScore = Math.max(5, 100 - (pelvisPenalty + lumbarPenalty) / 2);
+
+  // 4. 하체 정렬 (Lower Body) - Threshold: 3.0
+  const legAvg = (Math.abs(legAngleL) + Math.abs(legAngleR)) / 2;
+  // If legAvg > 3 (Severe), score should be < 60
+  const lowerBodyPenalty = legAvg > 3 ? 45 + (legAvg - 3) * 10 : (legAvg * 10);
+  const lowerBodyScore = Math.max(5, 100 - lowerBodyPenalty);
+
+  const rawAvg = (upperBodyScore + leftRightScore + pelvisLumbarScore + lowerBodyScore) / 4;
+  const manualAdjustment = data.manualScore !== null ? data.manualScore - rawAvg : 0;
+
+  const finalUpperValue = Math.round(Math.min(100, Math.max(5, upperBodyScore + manualAdjustment)));
+  const finalLeftRightValue = Math.round(Math.min(100, Math.max(5, leftRightScore + manualAdjustment)));
+  const finalPelvisLumbarValue = Math.round(Math.min(100, Math.max(5, pelvisLumbarScore + manualAdjustment)));
+  const finalLowerValue = Math.round(Math.min(100, Math.max(5, lowerBodyScore + manualAdjustment)));
 
   const radarData = [
-    { subject: '전면', value: frontScore, fullMark: 100 },
-    { subject: '측면(왼)', value: sideLeftScore, fullMark: 100 },
-    { subject: '측면(오)', value: sideRightScore, fullMark: 100 },
-    { subject: '후면', value: backScore, fullMark: 100 },
+    { subject: '상체 정렬', value: finalUpperValue, fullMark: 100 },
+    { subject: '좌우 균형', value: finalLeftRightValue, fullMark: 100 },
+    { subject: '골반/요추', value: finalPelvisLumbarValue, fullMark: 100 },
+    { subject: '하체 정렬', value: finalLowerValue, fullMark: 100 },
   ];
 
   // Sidiz Chair Tips
@@ -496,6 +542,21 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
     finalScores[mainType] = data.manualScore;
   }
 
+  const thematicSummaries = {
+    upperBody: isTypeA 
+      ? "상체 근육의 긴장도가 높아 어깨와 목이 앞으로 굽어 있는 상태입니다. 등판과 헤드레스트의 지지가 필수적입니다." 
+      : "상체 정렬이 비교적 안정적입니다. 현재의 바른 자세를 유지하기 위해 주기적인 스트레칭을 권장합니다.",
+    asymmetry: isTypeB 
+      ? "신체 좌우의 무게 중심이 한쪽으로 쏠려 있어 골반과 어깨의 수평이 무너진 상태입니다. 좌판의 올바른 활용이 중요합니다." 
+      : "좌우 균형이 양호한 편입니다. 한쪽으로 기대 앉거나 다리를 꼬는 습관을 주의한다면 건강한 정렬을 유지할 수 있습니다.",
+    pelvisLumbar: isTypeD 
+      ? "골반의 기울기가 정상 범위를 벗어나 허리 주변부의 압력이 가중되고 있습니다. 럼버서포트를 통한 요추 지지가 시급합니다." 
+      : "골반과 요추의 정렬이 표준 범위 내에 있어 허리 건강이 양호합니다. 척추의 S라인이 무너지지 않도록 주의하세요.",
+    lowerBody: isTypeC 
+      ? "다리 정렬이 안쪽으로 휘어 있어 무릎 관절에 무리가 갈 수 있는 상태입니다. 발바닥을 지면에 밀착시키는 습관이 필요합니다." 
+      : "하체 정렬이 곧게 유지되고 있어 관절의 부담이 적은 상태입니다. 무릎 각도가 90~100도를 유지하도록 의자 높이를 조절하세요."
+  };
+
   return {
     mainType,
     subTypes,
@@ -513,7 +574,14 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
     sidizChairTips,
     mixedTrend,
     hasAsymmetryBadge,
-    overallScore: data.manualScore !== null ? data.manualScore : Math.round(scores[BodyType.TYPE0]),
+    overallScore: data.manualScore !== null ? data.manualScore : Math.round(rawAvg),
+    areaScores: {
+      upperBody: finalUpperValue,
+      leftRight: finalLeftRightValue,
+      pelvisLumbar: finalPelvisLumbarValue,
+      lowerBody: finalLowerValue,
+    },
+    thematicSummaries,
     recommendedProductIds,
     recommendedAccessoryIds: [] as string[],
     keyMetrics: keyMetrics, // Return all metrics instead of slicing

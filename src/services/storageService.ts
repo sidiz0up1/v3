@@ -131,15 +131,25 @@ export const storageService = {
     const supabase = getSupabase();
     if (supabase) {
       try {
+        console.log('Fetching reports from Supabase...');
         const { data, error } = await supabase
           .from('posture_reports')
           .select('*')
           .order('created_at', { ascending: false });
         
-        if (!error && data) return data as PostureReportRecord[];
+        if (error) {
+          console.error('Supabase fetch reports error:', error);
+          throw error;
+        }
+        if (data) {
+          console.log(`Successfully fetched ${data.length} reports from Supabase.`);
+          return data as PostureReportRecord[];
+        }
       } catch (err) {
-        console.error('Supabase fetch error:', err);
+        console.error('Supabase fetch error, falling back to local storage:', err);
       }
+    } else {
+      console.warn('Supabase not configured, using local storage.');
     }
     return this.getLocalReports();
   },
@@ -158,15 +168,25 @@ export const storageService = {
     const supabase = getSupabase();
     if (supabase) {
       try {
+        console.log('Fetching stores from Supabase...');
         const { data, error } = await supabase
           .from('stores')
           .select('*')
           .order('name', { ascending: true });
         
-        if (!error && data) return data as Store[];
+        if (error) {
+          console.error('Supabase fetch stores error:', error);
+          throw error;
+        }
+        if (data) {
+          console.log(`Successfully fetched ${data.length} stores from Supabase.`);
+          return data as Store[];
+        }
       } catch (err) {
-        console.error('Supabase fetch stores error:', err);
+        console.error('Supabase fetch stores error, falling back to local storage:', err);
       }
+    } else {
+      console.warn('Supabase not configured for stores, using local storage.');
     }
 
     try {
