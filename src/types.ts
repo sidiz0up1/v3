@@ -14,6 +14,10 @@ export interface UserInfo {
   age: string;
   height: string;
   weight: string;
+  sittingTime?: string; // '상', '중', '하'
+  shoulderWidth?: string;
+  sittingHeight?: string;
+  poplitealHeight?: string;
 }
 
 export interface PostureData {
@@ -25,7 +29,6 @@ export interface PostureData {
     rightLegAngle: number | null;
     leftLegAngle: number | null;
     pelvisHorizontal: HorizontalValue | null;
-    sectionScore: number | null;
   };
   sideLeft: {
     roundShoulder: number | null;
@@ -33,7 +36,6 @@ export interface PostureData {
     forwardHead: number | null;
     thoracic: number | null;
     lumbar: number | null;
-    sectionScore: number | null;
   };
   sideRight: {
     roundShoulder: number | null;
@@ -41,25 +43,24 @@ export interface PostureData {
     forwardHead: number | null;
     thoracic: number | null;
     lumbar: number | null;
-    sectionScore: number | null;
   };
   back: {
     shoulderHorizontal: HorizontalValue | null;
     kneeHorizontal: HorizontalValue | null;
     pelvisHorizontal: HorizontalValue | null;
-    sectionScore: number | null;
   };
   manualScore: number | null;
   topPercent: number | null;
+  recommendStefo?: boolean;
 }
 
 export enum BodyType {
-  TYPE0 = 'TYPE 0 건강형 (균형형)',
-  TYPEA = 'TYPE A 상체 말림형',
-  TYPEB = 'TYPE B 좌우 비대칭형',
-  TYPEC = 'TYPE C 하체 O다리형',
-  TYPED = 'TYPE D 골반-요추 불균형형',
-  TYPEE = 'TYPE E 복합 불균형형',
+  TYPE0 = '건강형',
+  TYPEA = '상체 말림형',
+  TYPEB = '좌우 비대칭형',
+  TYPEC = '하체 O다리형',
+  TYPED = '골반-요추 불균형형',
+  TYPEE = '복합 불균형형',
 }
 
 export interface AnalysisResult {
@@ -108,8 +109,15 @@ export interface AnalysisResult {
     pelvisLumbar: string;
     lowerBody: string;
   };
+  consultationSummary: string;
   recommendedProductIds: string[];
   recommendedAccessoryIds: string[];
+  customizationDeviations?: {
+    shoulderWidth: { diff: number | null; standard: number };
+    sittingHeight: { diff: number | null; standard: number };
+    poplitealHeight: { diff: number | null; standard: number };
+    height?: { diff: number | null; standard: number };
+  };
 }
 
 export interface PostureReportRecord {

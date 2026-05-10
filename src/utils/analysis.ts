@@ -1,4 +1,5 @@
 import { BodyType, PostureData, AnalysisResult, HorizontalValue } from '../types';
+import { getStandardData } from '../data/standardBodyData';
 
 const getHorizontalNum = (h: HorizontalValue | null): number => {
   if (!h) return 0;
@@ -18,169 +19,80 @@ const getDiff = (a: number | null, b: number | null): number => {
 
 const getRecommendedProducts = (userInfo: any, mainType: BodyType): string[] => {
   const gender = userInfo.gender;
-  const age = userInfo.age;
-  const height = parseInt(userInfo.height) || 0;
-  const weight = parseInt(userInfo.weight) || 0;
+  const sittingTime = userInfo.sittingTime || '중';
+  const age = userInfo.age; // "20~34", "35~49", "50+"
+  const height = parseInt(userInfo.height) || 170;
+  const weight = parseInt(userInfo.weight) || 70;
   
   let typeLabel = '';
   switch(mainType) {
     case BodyType.TYPE0: typeLabel = '건강형'; break;
-    case BodyType.TYPEA: typeLabel = '상체 말림형'; break;
-    case BodyType.TYPEB: typeLabel = '좌우 비대칭형'; break;
-    case BodyType.TYPEC: typeLabel = '하체 O다리형'; break;
+    case BodyType.TYPEA: typeLabel = '상체말림형'; break;
+    case BodyType.TYPEB: typeLabel = '좌우비대칭형'; break;
+    case BodyType.TYPEC: typeLabel = '하체 o다리형'; break;
     case BodyType.TYPED: typeLabel = '골반-요추 불균형형'; break;
     case BodyType.TYPEE: typeLabel = '복합 불균형형'; break;
   }
 
+  // Simplified logic based on patterns in the provided table
   if (gender === '남성') {
-    if (age === '20~34' || age === '35~49' || age === '50+') {
+    if (sittingTime === '상') {
       if (height < 165) {
-        if (weight < 60) {
-          if (typeLabel === '건강형') return ['gx', 't20'];
-          if (typeLabel === '상체 말림형') return ['t80', 'gx'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'gx'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'gx'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'gx'];
-          if (typeLabel === '복합 불균형형') return ['t90', 'gx'];
-        } else if (weight <= 80) {
-          if (typeLabel === '건강형') return ['gx', 't20'];
-          if (typeLabel === '상체 말림형') return ['t80', 'gx'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'gx'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'gx'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['gx', 't60air'];
-          if (typeLabel === '상체 말림형') return ['t80', 't60air'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't60air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't60air'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't60air'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't60air'];
-        }
+        if (typeLabel === '복합 불균형형') return ['t90', 't60'];
+        return ['t60', 't50air'];
       } else if (height <= 175) {
-        if (weight < 60) {
-          if (typeLabel === '건강형') return ['gx', 't20'];
-          if (typeLabel === '상체 말림형') return ['t80', 'gx'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'gx'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'gx'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'gx'];
-          if (typeLabel === '복합 불균형형') return ['t90', 'gx'];
-        } else if (weight <= 80) {
-          if (typeLabel === '건강형') return ['t50', 'gx'];
-          if (typeLabel === '상체 말림형') return ['t80', 't50'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't50air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't50'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['t50', 't60air'];
-          if (typeLabel === '상체 말림형') return ['t80', 't60air'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't60air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't60air'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't60air'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't60air'];
-        }
-      } else {
-        if (weight < 60) {
-          if (typeLabel === '건강형') return ['gx', 't20'];
-          if (typeLabel === '상체 말림형') return ['t80', 'gx'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'gx'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'gx'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'gx'];
-          if (typeLabel === '복합 불균형형') return ['t90', 'gx'];
-        } else if (weight <= 80) {
-          if (typeLabel === '건강형') return ['t50', 'gx'];
-          if (typeLabel === '상체 말림형') return ['t80', 't50'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't50air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't50'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['t80', 't90'];
-          if (typeLabel === '상체 말림형') return ['t80', 't90'];
-          if (typeLabel === '좌우 비대칭형') return ['t80', 't90'];
-          if (typeLabel === '하체 O다리형') return ['t80', 't90'];
-          if (typeLabel === '골반-요추 불균형형') return ['t80', 't90'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't80'];
-        }
+        if (weight < 60) return (typeLabel === '복합 불균형형' ? ['t90', 't60'] : ['t60', 't50air']);
+        return ['t90', 't80'];
+      } else { // height > 175
+        if (weight < 60) return (typeLabel === '복합 불균형형' ? ['t90', 't60'] : ['t60', 't50air']);
+        if (weight <= 80) return ['t90', 't80'];
+        return ['t80', 't90'];
+      }
+    } else { // sittingTime '중' or '하'
+      if (height < 165) {
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        if (weight > 80) return ['gx', 't80'];
+        return ['t20', 't50air'];
+      } else if (height <= 175) {
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        if (weight > 80) return ['gx', 't80'];
+        if (sittingTime === '중' && weight >= 60) return ['t50', 't60'];
+        return ['t60', 't50air'];
+      } else { // height > 175
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        return ['gx', 't80'];
       }
     }
   } else { // 여성
-    if (age === '20~34' || age === '35~49' || age === '50+') {
-      if (height < 155) {
-        if (weight < 50) {
-          if (typeLabel === '건강형') return ['linie', 't20'];
-          if (typeLabel === '상체 말림형') return ['t60', 'linie'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'linie'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'linie'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'linie'];
-          if (typeLabel === '복합 불균형형') return ['t80', 'linie'];
-        } else if (weight <= 65) {
-          if (typeLabel === '건강형') return ['linie', 't20'];
-          if (typeLabel === '상체 말림형') return ['t60', 'linie'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'linie'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'linie'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t80', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['linie', 't60air'];
-          if (typeLabel === '상체 말림형') return ['t60', 't60air'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't60air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't60air'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't60air'];
-          if (typeLabel === '복합 불균형형') return ['t80', 't60air'];
-        }
-      } else if (height <= 165) {
-        if (weight < 50) {
-          if (typeLabel === '건강형') return ['linie', 't20'];
-          if (typeLabel === '상체 말림형') return ['t60', 'linie'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'linie'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'linie'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'linie'];
-          if (typeLabel === '복합 불균형형') return ['t80', 'linie'];
-        } else if (weight <= 65) {
-          if (typeLabel === '건강형') return ['t50', 'linie'];
-          if (typeLabel === '상체 말림형') return ['t60', 't50'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't50air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't50'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t80', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['t50', 't60air'];
-          if (typeLabel === '상체 말림형') return ['t60', 't60air'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't60air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't60air'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't60air'];
-          if (typeLabel === '복합 불균형형') return ['t80', 't60air'];
-        }
+    if (sittingTime === '상') {
+      // Logic for women '상' is mostly same as men '상' according to table patterns
+      if (height < 165) {
+        if (typeLabel === '복합 불균형형') return ['t90', 't60'];
+        return ['t60', 't50air'];
+      } else if (height <= 175) {
+        if (weight < 60) return (typeLabel === '복합 불균형형' ? ['t90', 't60'] : ['t60', 't50air']);
+        return ['t90', 't80'];
       } else {
-        if (weight < 50) {
-          if (typeLabel === '건강형') return ['linie', 't20'];
-          if (typeLabel === '상체 말림형') return ['t60', 'linie'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 'linie'];
-          if (typeLabel === '하체 O다리형') return ['t20', 'linie'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 'linie'];
-          if (typeLabel === '복합 불균형형') return ['t80', 'linie'];
-        } else if (weight <= 65) {
-          if (typeLabel === '건강형') return ['t50', 'linie'];
-          if (typeLabel === '상체 말림형') return ['t60', 't50'];
-          if (typeLabel === '좌우 비대칭형') return ['t50', 't50air'];
-          if (typeLabel === '하체 O다리형') return ['t20', 't50'];
-          if (typeLabel === '골반-요추 불균형형') return ['t50', 't50air'];
-          if (typeLabel === '복합 불균형형') return ['t80', 't50air'];
-        } else {
-          if (typeLabel === '건강형') return ['t80', 't90'];
-          if (typeLabel === '상체 말림형') return ['t80', 't90'];
-          if (typeLabel === '좌우 비대칭형') return ['t80', 't90'];
-          if (typeLabel === '하체 O다리형') return ['t80', 't90'];
-          if (typeLabel === '골반-요추 불균형형') return ['t80', 't90'];
-          if (typeLabel === '복합 불균형형') return ['t90', 't80'];
-        }
+        if (weight < 60) return (typeLabel === '복합 불균형형' ? ['t90', 't60'] : ['t60', 't50air']);
+        if (weight <= 80) return ['t90', 't80'];
+        return ['t80', 't90'];
+      }
+    } else { // 여성 중, 하
+      if (height < 165) {
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        return ['t50air', 'linie'];
+      } else if (height <= 175) {
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        if (weight > 80) return ['t60air', 't50'];
+        if (weight >= 60) return ['t50', 't60'];
+        return ['t60', 't50air'];
+      } else { // height > 175
+        if (typeLabel === '복합 불균형형') return ['t90', 't80'];
+        if (weight > 80) return ['t60air', 't50'];
+        return ['t60', 't50air'];
       }
     }
   }
-
-  return ['t50', 'gx'];
 };
 
 export const analyzePosture = (data: PostureData): AnalysisResult => {
@@ -224,12 +136,12 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
     scores[BodyType.TYPEB] = 40;
   }
 
-  // 3. TYPE C: 하체 O다리형
-  const isTypeC = legAngleL < -3 || legAngleR < -3;
+  // 3. TYPE C: 하체 O다리/X다리형
+  const isTypeC = Math.abs(legAngleL) > 3 || Math.abs(legAngleR) > 3;
   if (isTypeC) {
     let cScore = 60;
-    if (legAngleL < -5 || legAngleR < -5) cScore += 20;
-    if (legAngleL < -3 && legAngleR < -3) cScore += 20;
+    if (Math.abs(legAngleL) > 5 || Math.abs(legAngleR) > 5) cScore += 20;
+    if (Math.abs(legAngleL) > 3 && Math.abs(legAngleR) > 3) cScore += 20;
     scores[BodyType.TYPEC] = Math.min(100, cScore);
   }
 
@@ -358,8 +270,8 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       cause = '좋은 체형은 만드는 것보다 유지하는 것이 더 중요하기 때문입니다.';
       maintenanceStrategy = ['엉덩이를 깊숙이 넣고 앉으세요.', '허리의 자연스러운 곡선을 유지하세요.', '모니터 높이를 눈높이에 맞추세요.'];
       coreMessage = '좋은 자세는 ‘만드는 것’이 아니라 ‘유지하는 능력’입니다.';
-      lifeHabits = ['1시간마다 가볍게 움직이기', '한 자세를 오래 유지하지 않기', '운동과 스트레칭으로 균형 유지하기'];
-      avoidHabits = ['“나는 괜찮다”는 생각으로 자세를 방치하기', '좋은 자세가 오히려 고정된 자세로 변하는 경우'];
+      lifeHabits = ['1시간마다 가볍게 움직여 주세요.', '한 자세를 오래 유지하지 마세요.', '운동과 스트레칭으로 균형을 유지해 주세요.'];
+      avoidHabits = ['“나는 괜찮다”는 생각으로 자세를 방치하지 마세요.', '좋은 자세가 고정된 자세로 변하지 않도록 주의해 주세요.'];
       break;
     case BodyType.TYPEA:
       description = '어깨가 말리고 상체가 앞으로 무너지는 유형입니다.';
@@ -369,8 +281,8 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       cause = '등 상부의 지지력이 부족해 상체 전체가 앞으로 무너지기 때문입니다.';
       maintenanceStrategy = ['허리보다 등을 먼저 등판에 밀착해 앉으세요.', '모니터를 낮추기보다 몸이 앞으로 나오지 않도록 조정하세요.', '키보드는 몸 가까이에 배치하세요.'];
       coreMessage = '허리가 아니라 ‘등 상부’를 먼저 안정적으로 지지해야 자세가 유지됩니다.';
-      lifeHabits = ['스마트폰을 볼 때 턱을 가볍게 당기세요.', '30분마다 한 번씩 등을 펴 주세요.', '팔꿈치는 항상 안정적으로 지지하세요.'];
-      avoidHabits = ['고개를 숙인 상태로 장시간 작업하기', '팔걸이 없는 의자 사용하기', '허리만 세우는 자세'];
+      lifeHabits = ['스마트폰을 볼 때 턱을 가볍게 당겨 주세요.', '30분마다 한 번씩 등을 펴 주세요.', '팔꿈치는 항상 안정적으로 지지해 주세요.'];
+      avoidHabits = ['고개를 숙인 상태로 장시간 작업하지 마세요.', '팔걸이가 있는 의자를 사용하세요.', '허리만 세우는 자세를 피해 주세요.'];
       break;
     case BodyType.TYPEB:
       description = '몸이 한쪽으로 기울어지는 유형입니다.';
@@ -380,8 +292,8 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       cause = '몸이 중앙 정렬을 유지하지 못하고 편한 쪽으로 계속 쏠리기 때문입니다.';
       maintenanceStrategy = ['자세를 세우기 전에 좌우 압력이 같은지 먼저 확인하세요.', '등을 펴더라도 중심이 틀어져 있으면 효과가 제한됩니다.', '엉덩이 양쪽이 균형 있게 눌리도록 앉으세요.'];
       coreMessage = '이 유형은 자세보다 ‘중심 정렬’이 더 중요합니다.';
-      lifeHabits = ['다리 꼬는 습관 줄이기', '가방을 양쪽 번갈아 들기', '서 있을 때 체중을 균형 있게 분산하기'];
-      avoidHabits = ['턱 괴기', '한쪽으로 기대어 앉기', '한쪽 팔만 사용하는 습관'];
+      lifeHabits = ['다리를 꼬는 습관을 줄여 주세요.', '가방을 양쪽 번갈아 들어 주세요.', '서 있을 때 체중을 균형 있게 분산해 주세요.'];
+      avoidHabits = ['턱을 괴지 마세요.', '한쪽으로 기대어 앉지 마세요.', '양팔을 균형 있게 사용해 주세요.'];
       break;
     case BodyType.TYPEC:
       description = '다리 축이 바깥으로 벌어지는 유형입니다.';
@@ -391,8 +303,8 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       cause = '발 방향이 바깥으로 열려 있어 무릎이 함께 벌어지기 때문입니다.';
       maintenanceStrategy = ['무릎을 억지로 모으기보다 발 방향을 정면으로 맞추세요.', '발의 정렬이 바뀌면 무릎도 자연스럽게 따라옵니다.', '발바닥 전체를 바닥에 안정적으로 밀착하세요.'];
       coreMessage = '무릎이 아니라 ‘발 방향’을 먼저 바로잡는 것이 중요합니다.';
-      lifeHabits = ['서 있을 때 발을 11자로 유지하기', '계단을 오를 때 무릎 방향 인식하기', '장시간 서 있을 때 체중 균형 유지하기'];
-      avoidHabits = ['양반다리', '의자에 한쪽 다리 올리기', '발을 바깥 방향으로 두고 서 있기'];
+      lifeHabits = ['서 있을 때 발을 11자로 유지해 주세요.', '계단을 오를 때 무릎 방향을 인식해 주세요.', '장시간 서 있을 때 체중 균형을 유지해 주세요.'];
+      avoidHabits = ['양반다리를 피해 주세요.', '의자에 한쪽 다리를 올리지 마세요.', '발을 정면으로 향하게 해주세요.'];
       break;
     case BodyType.TYPED:
       description = '허리 곡선과 골반 기울기에 불균형이 있는 유형입니다.';
@@ -402,8 +314,8 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       cause = '허리를 직접 조절하려다 보니 정렬이 더욱 틀어지기 때문입니다.';
       maintenanceStrategy = ['허리보다 엉덩이 위치를 먼저 맞추세요.', '엉덩이가 안정되면 허리는 자연스럽게 정렬됩니다.', '허리에 과도한 힘을 주지 말고 편안하게 유지하세요.'];
       coreMessage = '허리는 조절의 대상이 아니라 ‘정렬의 결과’입니다.';
-      lifeHabits = ['서 있을 때 골반의 중립 자세 유지하기', '복부에 가볍게 힘 주기', '앉았다 일어날 때 허리 부담 줄이기'];
-      avoidHabits = ['허리를 과도하게 꺾는 자세', '완전히 무너져 앉기', '복부 지지 없이 장시간 앉기'];
+      lifeHabits = ['서 있을 때 골반의 중립 자세를 유지해 주세요.', '복부에 가볍게 힘을 주어 지지해 주세요.', '앉았다 일어날 때 허리 부담을 줄여 주세요.'];
+      avoidHabits = ['허리를 과도하게 꺾지 마세요.', '완전히 무너져 앉는 자세를 피해 주세요.', '복부 지지 없이 장시간 앉지 마세요.'];
       break;
     case BodyType.TYPEE:
       description = '여러 자세 문제가 동시에 나타나는 유형입니다.';
@@ -411,10 +323,10 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       summary = '신체 전반의 균형이 동시에 흔들리는 상태입니다.';
       sittingHabits = ['자세를 바꿔도 몇 분 지나면 다시 원래 자세로 돌아가는 경우가 많습니다.', '어디부터 교정해야 할지 혼란을 느끼게 됩니다.', '자세를 계속 수정하게 되는 패턴이 반복됩니다.'];
       cause = '여러 불균형이 동시에 존재해 한 번에 안정되지 않기 때문입니다.';
-      maintenanceStrategy = ['한 번에 모두 교정하려 하지 말고 단계적으로 접근하세요.', '엉덩이 정렬 → 등판에 기대기 → 목 정렬'];
+      maintenanceStrategy = ['한 번에 모두 교정하려 하지 말고 단계적으로 접근하세요.', '엉덩이 정렬부터 목 정렬까지 순차적으로 진행해 보세요.'];
       coreMessage = '이 유형은 ‘교정의 순서’가 가장 중요합니다.';
-      lifeHabits = ['30~40분마다 자세 리셋하기', '앉기와 서기를 반복하기', '문제를 하나씩 나누어 교정하기'];
-      avoidHabits = ['완벽한 자세를 한 번에 만들려는 시도', '장시간 같은 자세 유지', '한 자세로 오래 고정하기'];
+      lifeHabits = ['30~40분마다 자세를 리셋해 주세요.', '앉기와 서기를 반복하며 움직여 주세요.', '문제를 하나씩 나누어 교정해 주세요.'];
+      avoidHabits = ['완벽한 자세를 한 번에 만들려 하지 마세요.', '장시간 같은 자세를 유지하지 마세요.', '한 자세로 오래 고정하지 마세요.'];
       break;
   }
 
@@ -517,25 +429,111 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       break;
   }
 
-  const recommendedProductIds = getRecommendedProducts(data.userInfo, mainType);
+  const typeLabelsMap: Record<BodyType, string> = {
+    [BodyType.TYPE0]: '건강형',
+    [BodyType.TYPEA]: '상체말림형',
+    [BodyType.TYPEB]: '좌우비대칭형',
+    [BodyType.TYPEC]: '하체 o다리형',
+    [BodyType.TYPED]: '골반-요추 불균형형',
+    [BodyType.TYPEE]: '복합 불균형형',
+  };
 
-  // Accessory Recommendation Logic (STEPO)
-  const pHorizValFront = Math.abs(getHorizontalNum(data.front.pelvisHorizontal));
-  const pHorizValBack = Math.abs(getHorizontalNum(data.back.pelvisHorizontal));
-  const pHorizMax = Math.max(pHorizValFront, pHorizValBack);
+  const typeBaseLabel = typeLabelsMap[mainType]?.split(' (')[0] || '건강형';
 
-  const needsStepo = 
-    Math.abs(legAngleL) > 3 || 
-    Math.abs(legAngleR) > 3 || 
-    kHorizVal > 2 ||
-    pHorizMax > 2 ||
-    Math.abs(ptL) < 5 || Math.abs(ptL) > 8 ||
-    Math.abs(ptR) < 5 || Math.abs(ptR) > 8;
-  
-  if (needsStepo && !recommendedProductIds.includes('stepo')) {
-    recommendedProductIds.push('stepo');
+  const productNames: Record<string, string> = {
+    t90: 'T90',
+    t80: 'T80',
+    t60: 'T60',
+    t60air: 'T60 AIR',
+    t50: 'T50',
+    t50air: 'T50 AIR',
+    t20: 'T20',
+    linie: 'LINIE',
+    gx: 'GX',
+    gcpro: 'GC PRO',
+  };
+
+  let recommendedProductIds = getRecommendedProducts(data.userInfo, mainType);
+
+  if (data.recommendStefo) {
+    const productPriority: Record<string, number> = {
+      't90': 0, 't80': 1, 't60air': 2, 't60': 3, 't50air': 4, 't50': 5, 'gx': 6, 't20': 7, 'linie': 8
+    };
+    recommendedProductIds.sort((a, b) => (productPriority[a] ?? 99) - (productPriority[b] ?? 99));
+    recommendedProductIds = [...recommendedProductIds.slice(0, 2), 'stepo'];
+  } else {
+    const productPriority: Record<string, number> = {
+      't90': 0, 't80': 1, 't60air': 2, 't60': 3, 't50air': 4, 't50': 5, 'gx': 6, 't20': 7, 'linie': 8
+    };
+    recommendedProductIds.sort((a, b) => (productPriority[a] ?? 99) - (productPriority[b] ?? 99));
+    recommendedProductIds = recommendedProductIds.slice(0, 3);
   }
 
+  const firstProdId = recommendedProductIds[0] || 't50';
+  const firstProdName = productNames[firstProdId] || firstProdId.toUpperCase();
+
+  // Customization Deviations Calculation
+  const heightVal = parseInt(data.userInfo.height) || 0;
+  const standard = getStandardData(data.userInfo.gender, heightVal);
+  const avgHeightForGender = data.userInfo.gender === '남성' ? 173 : 161;
+  const customizationDeviations = standard ? {
+    shoulderWidth: { 
+      diff: data.userInfo.shoulderWidth ? parseFloat(data.userInfo.shoulderWidth) - standard.shoulderWidth : null,
+      standard: standard.shoulderWidth
+    },
+    sittingHeight: { 
+      diff: data.userInfo.sittingHeight ? parseFloat(data.userInfo.sittingHeight) - standard.sittingHeight : null,
+      standard: standard.sittingHeight
+    },
+    poplitealHeight: { 
+      diff: data.userInfo.poplitealHeight ? parseFloat(data.userInfo.poplitealHeight) - standard.poplitealHeight : null,
+      standard: standard.poplitealHeight
+    },
+    height: {
+      diff: (heightVal - avgHeightForGender) * 10,
+      standard: avgHeightForGender * 10
+    }
+  } : undefined;
+
+  // Type-specific phrases for consultation summary (Burden and Functions relative to Type)
+  const typePhrases: Record<string, { burden: string; functions: string }> = {
+    '건강형': { burden: '신체 전반의 하중', functions: '전반적인 지지' },
+    '상체말림형': { burden: '상체에 가해지는 하중 부담', functions: '등판, 헤드레스트, 팔걸이' },
+    '좌우비대칭형': { burden: '허리와 골반에 집중되는 하중 부담', functions: '좌판, 팔걸이' },
+    '하체 o다리형': { burden: '하체로 전달되는 하중 부담', functions: '좌판' },
+    '골반-요추 불균형형': { burden: '허리와 골반에 집중되는 하중 부담', functions: '럼버서포트, 좌판' },
+    '복합 불균형형': { burden: '신체 전반에 걸쳐 나타나는 하중 부담', functions: '등판, 헤드레스트, 팔걸이, 좌판, 럼버서포트' },
+  };
+
+  const phrases = typePhrases[typeBaseLabel] || typePhrases['건강형'];
+
+  const getMeasureStatus = (dev: number | null, standardVal: number, pos: string, neg: string) => {
+    if (dev === null) return '표준';
+    const threshold = standardVal * 0.01;
+    if (Math.abs(dev) < threshold) return '표준';
+    const absDev = Math.round(Math.abs(dev));
+    return `${absDev}mm ${dev > 0 ? pos : neg}`;
+  };
+
+  const measureStats = {
+    height: getMeasureStatus(customizationDeviations?.height?.diff || null, customizationDeviations?.height?.standard || 1, '큰 편', '작은 편'),
+    sittingHeight: getMeasureStatus(customizationDeviations?.sittingHeight?.diff || null, customizationDeviations?.sittingHeight?.standard || 1, '큼', '작음'),
+    shoulderWidth: getMeasureStatus(customizationDeviations?.shoulderWidth?.diff || null, customizationDeviations?.shoulderWidth?.standard || 1, '넓음', '좁음'),
+    poplitealHeight: getMeasureStatus(customizationDeviations?.poplitealHeight?.diff || null, customizationDeviations?.poplitealHeight?.standard || 1, '높음', '낮음')
+  };
+
+  const lastSentence = firstProdName === 'T90' 
+    ? '여기에 고객님의 모든 움직임을 실시간으로 따라가는 시디즈만의 정교한 얼티밋싱크 틸팅 기술이 더해져, 어떤 자세에서도 허리 밀착감을 유지하는 완벽한 피팅을 경험하실 수 있습니다.'
+    : '여기에 몸의 유연한 움직임을 받아주는 인체공학적 싱크 틸팅 메커니즘이 더해져, 장시간 착석 시에도 신체의 긴장을 완화하고 바른 자세를 유지하도록 도와줍니다.';
+
+  const consultationSummary = `고객님의 체형을 종합 분석하여 신체 스트레스를 완화해줄 최적의 피팅 솔루션을 제안합니다.
+
+고객님의 신체 타입은 **${typeBaseLabel}**으로, 정밀 측정 결과 앉은키는 평균대비 **${measureStats.sittingHeight}**, 어깨넓이는 평균대비 **${measureStats.shoulderWidth}**, 발바닥-오금 높이는 평균대비 **${measureStats.poplitealHeight}**인 상태로 확인되었습니다.
+
+신체 특성 상 **${phrases.burden}**을 분산시켜 주는 것이 중요합니다.
+이에 **${firstProdName}**의 세밀한 **${phrases.functions}** 조절 기능을 활용하여 내 몸에 딱 맞춘 듯한 편안함을 느껴보세요.
+
+${lastSentence}`;
   // Use manual score if provided, otherwise use calculated TYPE 0 score as base
   const finalScores = { ...scores };
   if (data.manualScore !== null) {
@@ -582,8 +580,10 @@ export const analyzePosture = (data: PostureData): AnalysisResult => {
       lowerBody: finalLowerValue,
     },
     thematicSummaries,
+    consultationSummary: consultationSummary,
     recommendedProductIds,
     recommendedAccessoryIds: [] as string[],
+    customizationDeviations,
     keyMetrics: keyMetrics, // Return all metrics instead of slicing
   };
 };

@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toJpeg } from 'html-to-image';
+import { PDFDocument } from 'pdf-lib';
 import { getSupabase } from './lib/supabase';
 
 import { storageService } from './services/storageService';
@@ -47,6 +48,9 @@ const INITIAL_DATA: PostureData = {
     age: '',
     height: '',
     weight: '',
+    shoulderWidth: '',
+    sittingHeight: '',
+    poplitealHeight: '',
   },
   front: {
     rightShoulderSlope: null,
@@ -55,7 +59,6 @@ const INITIAL_DATA: PostureData = {
     rightLegAngle: null,
     leftLegAngle: null,
     pelvisHorizontal: null,
-    sectionScore: null,
   },
   sideLeft: {
     roundShoulder: null,
@@ -63,7 +66,6 @@ const INITIAL_DATA: PostureData = {
     forwardHead: null,
     thoracic: null,
     lumbar: null,
-    sectionScore: null,
   },
   sideRight: {
     roundShoulder: null,
@@ -71,13 +73,11 @@ const INITIAL_DATA: PostureData = {
     forwardHead: null,
     thoracic: null,
     lumbar: null,
-    sectionScore: null,
   },
   back: {
     shoulderHorizontal: null,
     kneeHorizontal: null,
     pelvisHorizontal: null,
-    sectionScore: null,
   },
   manualScore: null,
   topPercent: null,
@@ -90,6 +90,9 @@ const SAMPLE_DATA: PostureData = {
     age: '32',
     height: '178',
     weight: '75',
+    shoulderWidth: '410',
+    sittingHeight: '950',
+    poplitealHeight: '420',
   },
   front: {
     rightShoulderSlope: 20.6,
@@ -98,7 +101,6 @@ const SAMPLE_DATA: PostureData = {
     rightLegAngle: -0.8,
     leftLegAngle: -2.9,
     pelvisHorizontal: { direction: 'L', value: 3.1 },
-    sectionScore: 65,
   },
   sideLeft: {
     roundShoulder: 48.5,
@@ -106,7 +108,6 @@ const SAMPLE_DATA: PostureData = {
     forwardHead: 24.4,
     thoracic: 43.7,
     lumbar: 51.2,
-    sectionScore: 72,
   },
   sideRight: {
     roundShoulder: 40.6,
@@ -114,13 +115,11 @@ const SAMPLE_DATA: PostureData = {
     forwardHead: 23.8,
     thoracic: 43.8,
     lumbar: 51.5,
-    sectionScore: 75,
   },
   back: {
     shoulderHorizontal: { direction: 'R', value: 0.9 },
     kneeHorizontal: { direction: 'R', value: 0.9 },
     pelvisHorizontal: { direction: 'L', value: 1.0 },
-    sectionScore: 80,
   },
   manualScore: 72,
   topPercent: 15,
@@ -129,12 +128,13 @@ const SAMPLE_DATA: PostureData = {
 export default function App() {
   const [currentView, setCurrentView] = useState<'input' | 'history' | 'guide' | 'dashboard'>('input');
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const [data, setData] = useState<PostureData>(INITIAL_DATA);
+  const [data, setData] = useState<PostureData>({
+    ...INITIAL_DATA,
+    recommendStefo: false
+  });
   const [showResult, setShowResult] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>('front');
-  const [memo, setMemo] = useState('');
   const [productRecommendation, setProductRecommendation] = useState('');
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<string>('');
   const [isAddingStore, setIsAddingStore] = useState(false);
@@ -204,11 +204,12 @@ export default function App() {
   }, [data]);
 
   const handleReset = () => {
-    setData(INITIAL_DATA);
+    setData({
+      ...INITIAL_DATA,
+      recommendStefo: false
+    });
     setShowResult(false);
-    setMemo('');
     setProductRecommendation('');
-    setSelectedProductIds([]);
   };
 
   const handleSample = () => {
@@ -217,8 +218,10 @@ export default function App() {
   };
 
   const handleLoadUser = (user: UserData) => {
-    setData(user.data);
-    setMemo(user.memo);
+    setData({
+      ...user.data,
+      recommendStefo: user.data.recommendStefo || false
+    });
     setProductRecommendation(user.recommendation);
     setShowResult(true);
   };
@@ -240,21 +243,27 @@ export default function App() {
     setActiveSection(activeSection === section ? null : section);
   };
 
-  const toggleProduct = (productId: string) => {
-    setSelectedProductIds(prev => {
-      if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId);
-      }
-      if (prev.length >= 3) {
-        return [prev[1], prev[2], productId];
-      }
-      return [...prev, productId];
-    });
-  };
-
   const handlePrint = async () => {
-    const pageIds = ['pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
+    let pageIds = ['pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
+    let useUploadedCover = false;
+    let coverBytes: ArrayBuffer | null = null;
     
+    // Attempt to fetch the uploaded cover PDF
+    try {
+      const response = await fetch('/report_cover.pdf');
+      if (response.ok) {
+        coverBytes = await response.arrayBuffer();
+        useUploadedCover = true;
+        console.log('Using uploaded cover PDF');
+      } else {
+        console.log('Uploaded cover PDF not found, falling back to generated cover');
+        pageIds = ['pdf-page-0', 'pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
+      }
+    } catch (e) {
+      console.warn('Error fetching uploaded cover, falling back to generated cover:', e);
+      pageIds = ['pdf-page-0', 'pdf-page-1', 'pdf-page-2', 'pdf-page-3'];
+    }
+
     // First, verify all elements are present
     const missing = pageIds.filter(id => !document.getElementById(id));
     if (missing.length > 0) {
@@ -350,7 +359,7 @@ export default function App() {
         const element = document.getElementById(pageId);
         if (!element) continue;
 
-        if (btn) btn.innerText = `결과 리포트 생성 중 (${i + 1}/3)...`;
+        if (btn) btn.innerText = `결과 리포트 생성 중 (${i + 1}/4)...`;
         
         try {
           console.log(`Capturing ${pageId}...`);
@@ -392,8 +401,64 @@ export default function App() {
         realContainer.style.display = 'none';
       }
 
-      console.log('Saving PDF');
-      pdf.save(`바디체크_분석보고서_${new Date().toISOString().slice(0, 10)}.pdf`);
+      let finalPdfBlob: Blob;
+
+      if (useUploadedCover && coverBytes) {
+        console.log('Merging with uploaded cover...');
+        try {
+          const mergedPdf = await PDFDocument.create();
+          
+          // Load and copy uploaded cover
+          const uploadedDoc = await PDFDocument.load(coverBytes);
+          const a4Width = 595.28;
+          const a4Height = 841.89;
+          
+          const pages = uploadedDoc.getPages();
+          for (let i = 0; i < pages.length; i++) {
+            const [embeddedPage] = await mergedPdf.embedPages([pages[i]]);
+            const { width, height } = embeddedPage;
+            
+            const scale = Math.min(a4Width / width, a4Height / height);
+            const x = (a4Width - width * scale) / 2;
+            const y = (a4Height - height * scale) / 2;
+            
+            const newPage = mergedPdf.addPage([a4Width, a4Height]);
+            newPage.drawPage(embeddedPage, {
+              x,
+              y,
+              width: width * scale,
+              height: height * scale,
+            });
+          }
+          
+          // Load and copy generated report
+          const reportBytes = pdf.output('arraybuffer');
+          const reportDoc = await PDFDocument.load(reportBytes);
+          const reportPages = await mergedPdf.copyPages(reportDoc, reportDoc.getPageIndices());
+          reportPages.forEach(p => mergedPdf.addPage(p));
+          
+          const mergedBytes = await mergedPdf.save();
+          finalPdfBlob = new Blob([mergedBytes], { type: 'application/pdf' });
+          
+          // Auto-download merged PDF
+          const url = URL.createObjectURL(finalPdfBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `바디체크_분석보고서_전체_${new Date().toISOString().slice(0, 10)}.pdf`;
+          link.click();
+          URL.revokeObjectURL(url);
+          console.log('Merged PDF saved');
+        } catch (mergeErr) {
+          console.error('Merge Error:', mergeErr);
+          // Fallback to report only if merge fails
+          alert('커버 PDF 병합 중 오류가 발생했습니다. 리포트 본문만 저장됩니다.');
+          finalPdfBlob = pdf.output('blob');
+          pdf.save(`바디체크_분석보고서_${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+      } else {
+        pdf.save(`바디체크_분석보고서_${new Date().toISOString().slice(0, 10)}.pdf`);
+        finalPdfBlob = pdf.output('blob');
+      }
 
       // 2. Storage Integration
       if (btn) btn.innerText = '결과 저장 중...';
@@ -403,12 +468,11 @@ export default function App() {
 
       if (supabase) {
         try {
-          const pdfBlob = pdf.output('blob');
           const fileName = `report_${Date.now()}.pdf`;
 
           const { error: uploadError } = await supabase.storage
             .from('reports')
-            .upload(fileName, pdfBlob, {
+            .upload(fileName, finalPdfBlob, {
               contentType: 'application/pdf',
               upsert: true
             });
@@ -737,7 +801,7 @@ export default function App() {
                             <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">이름</label>
                             <input 
                               type="text" 
-                              value={data.userInfo.name}
+                              value={data.userInfo.name || ''}
                               onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, name: e.target.value } }))}
                               className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               placeholder="이름"
@@ -746,7 +810,7 @@ export default function App() {
                           <div className="flex flex-col gap-1">
                             <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">성별</label>
                             <select 
-                              value={data.userInfo.gender}
+                              value={data.userInfo.gender || ''}
                               onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, gender: e.target.value } }))}
                               className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
@@ -759,7 +823,7 @@ export default function App() {
                             <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">연령</label>
                             <input 
                               type="number" 
-                              value={data.userInfo.age}
+                              value={data.userInfo.age || ''}
                               onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, age: e.target.value } }))}
                               className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               placeholder="연령"
@@ -769,7 +833,7 @@ export default function App() {
                             <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">키(cm)</label>
                             <input 
                               type="number" 
-                              value={data.userInfo.height}
+                              value={data.userInfo.height || ''}
                               onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, height: e.target.value } }))}
                               className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               placeholder="키"
@@ -779,11 +843,50 @@ export default function App() {
                             <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">몸무게(kg)</label>
                             <input 
                               type="number" 
-                              value={data.userInfo.weight}
+                              value={data.userInfo.weight || ''}
                               onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, weight: e.target.value } }))}
                               className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               placeholder="몸무게"
                             />
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-1 h-3 bg-indigo-300 rounded-full" />
+                            <h4 className="text-[12px] sidiz-voice-3 text-indigo-700">고객 맞춤 영역</h4>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">어깨넓이(mm)</label>
+                              <input 
+                                type="number" 
+                                value={data.userInfo.shoulderWidth || ''}
+                                onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, shoulderWidth: e.target.value } }))}
+                                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="어깨넓이"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">앉은 키(mm)</label>
+                              <input 
+                                type="number" 
+                                value={data.userInfo.sittingHeight || ''}
+                                onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, sittingHeight: e.target.value } }))}
+                                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="앉은 키"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] sidiz-voice-3 text-slate-500 ml-1">발바닥-오금 높이(mm)</label>
+                              <input 
+                                type="number" 
+                                value={data.userInfo.poplitealHeight || ''}
+                                onChange={(e) => setData(prev => ({ ...prev, userInfo: { ...prev.userInfo, poplitealHeight: e.target.value } }))}
+                                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="발바닥-오금 높이"
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -808,14 +911,6 @@ export default function App() {
                       {/* Posture Sections */}
                       <div className="grid grid-cols-1 gap-4">
                         <Section title="정면 자세" isOpen={activeSection === 'front'} onToggle={() => toggleSection('front')}>
-                          <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <PostureInput 
-                              label="정면 자세 종합 점수" 
-                              value={data.front.sectionScore} 
-                              onChange={(v) => updateField('front', 'sectionScore', v)}
-                              unit="점"
-                            />
-                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <PostureInput label="오른쪽 어깨 기울기" value={data.front.rightShoulderSlope} onChange={(v) => updateField('front', 'rightShoulderSlope', v)} />
                             <PostureInput label="왼쪽 어깨 기울기" value={data.front.leftShoulderSlope} onChange={(v) => updateField('front', 'leftShoulderSlope', v)} />
@@ -827,9 +922,6 @@ export default function App() {
                         </Section>
 
                         <Section title="측면 자세 (왼쪽)" isOpen={activeSection === 'sideLeft'} onToggle={() => toggleSection('sideLeft')}>
-                          <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <PostureInput label="측면(좌) 종합 점수" value={data.sideLeft.sectionScore} onChange={(v) => updateField('sideLeft', 'sectionScore', v)} unit="점" />
-                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <PostureInput label="라운드 숄더" value={data.sideLeft.roundShoulder} onChange={(v) => updateField('sideLeft', 'roundShoulder', v)} />
                             <PostureInput label="거북목" value={data.sideLeft.forwardHead} onChange={(v) => updateField('sideLeft', 'forwardHead', v)} />
@@ -840,9 +932,6 @@ export default function App() {
                         </Section>
 
                         <Section title="측면 자세 (오른쪽)" isOpen={activeSection === 'sideRight'} onToggle={() => toggleSection('sideRight')}>
-                          <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <PostureInput label="측면(우) 종합 점수" value={data.sideRight.sectionScore} onChange={(v) => updateField('sideRight', 'sectionScore', v)} unit="점" />
-                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <PostureInput label="라운드 숄더" value={data.sideRight.roundShoulder} onChange={(v) => updateField('sideRight', 'roundShoulder', v)} />
                             <PostureInput label="거북목" value={data.sideRight.forwardHead} onChange={(v) => updateField('sideRight', 'forwardHead', v)} />
@@ -853,9 +942,6 @@ export default function App() {
                         </Section>
 
                         <Section title="후면 자세" isOpen={activeSection === 'back'} onToggle={() => toggleSection('back')}>
-                          <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <PostureInput label="후면 자세 종합 점수" value={data.back.sectionScore} onChange={(v) => updateField('back', 'sectionScore', v)} unit="점" />
-                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <PostureInput label="어깨 수평 각도" horizontal horizontalValue={data.back.shoulderHorizontal} onHorizontalChange={(v) => updateField('back', 'shoulderHorizontal', v)} value={null} onChange={() => {}} />
                             <PostureInput label="무릎 수평 각도" horizontal horizontalValue={data.back.kneeHorizontal} onHorizontalChange={(v) => updateField('back', 'kneeHorizontal', v)} value={null} onChange={() => {}} />
@@ -864,34 +950,25 @@ export default function App() {
                         </Section>
                       </div>
 
-                      {/* Memo & Products */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <label className="text-sm sidiz-voice-3 text-slate-700 ml-1">상담 메모</label>
-                          <textarea 
-                            value={memo}
-                            onChange={(e) => setMemo(e.target.value)}
-                            placeholder="고객 상담 내용을 입력하세요..."
-                            className="w-full h-32 p-4 text-sm rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all resize-none sidiz-voice-1 bg-slate-50"
-                          />
-                        </div>
-                        <div className="space-y-3">
-                          <label className="text-sm sidiz-voice-3 text-slate-700 ml-1">추천 제품</label>
-                          <div className="flex flex-wrap gap-2 mb-2 min-h-[32px]">
-                            {selectedProductIds.map(id => (
-                              <div key={id} className="flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] sidiz-voice-3 border border-indigo-100">
-                                {PRODUCTS.find(p => p.id === id)?.name}
-                                <button onClick={() => toggleProduct(id)}><X size={10} /></button>
-                              </div>
-                            ))}
+                      {/* Stepo Recommendation */}
+                      <div className="grid grid-cols-1 gap-6">
+                        <div className="p-6 rounded-2xl border border-sidiz-core-light bg-slate-50/50 flex items-center justify-between">
+                          <div className="flex flex-col gap-1">
+                            <h3 className="text-sm sidiz-voice-3 text-slate-700">스테포 추천 여부</h3>
+                            <p className="text-[11px] text-slate-400 sidiz-voice-1">분석 결과 리포트에 스테포 발받침대 추천을 포함합니다.</p>
                           </div>
-                          <select 
-                            onChange={(e) => { if (e.target.value) toggleProduct(e.target.value); e.target.value = ''; }}
-                            className="w-full p-3 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all sidiz-voice-1 bg-white"
+                          <button
+                            onClick={() => setData(prev => ({ ...prev, recommendStefo: !prev.recommendStefo }))}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                              data.recommendStefo ? 'bg-indigo-600' : 'bg-slate-200'
+                            }`}
                           >
-                            <option value="">제품 선택...</option>
-                            {PRODUCTS.map(p => <option key={p.id} value={p.id} disabled={selectedProductIds.includes(p.id)}>{p.name}</option>)}
-                          </select>
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                data.recommendStefo ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -934,7 +1011,7 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="h-full w-full"
               >
-                <ConsultationGuide />
+                <ConsultationGuide measurementData={data} analysisResult={analysisResult} />
               </motion.div>
             )}
 
@@ -970,13 +1047,22 @@ export default function App() {
       >
         {analysisResult && (
           <>
+            <div id="pdf-page-0">
+              <PostureReport 
+                data={data}
+                analysisResult={analysisResult}
+                productRecommendation={productRecommendation}
+                selectedProductIds={analysisResult.recommendedProductIds}
+                isPdf={true}
+                page={0}
+              />
+            </div>
             <div id="pdf-page-1">
               <PostureReport 
                 data={data}
                 analysisResult={analysisResult}
-                memo={memo}
                 productRecommendation={productRecommendation}
-                selectedProductIds={selectedProductIds}
+                selectedProductIds={analysisResult.recommendedProductIds}
                 isPdf={true}
                 page={1}
               />
@@ -985,9 +1071,8 @@ export default function App() {
               <PostureReport 
                 data={data}
                 analysisResult={analysisResult}
-                memo={memo}
                 productRecommendation={productRecommendation}
-                selectedProductIds={selectedProductIds}
+                selectedProductIds={analysisResult.recommendedProductIds}
                 isPdf={true}
                 page={2}
               />
@@ -996,9 +1081,8 @@ export default function App() {
               <PostureReport 
                 data={data}
                 analysisResult={analysisResult}
-                memo={memo}
                 productRecommendation={productRecommendation}
-                selectedProductIds={selectedProductIds}
+                selectedProductIds={analysisResult.recommendedProductIds}
                 isPdf={true}
                 page={3}
               />
