@@ -1390,8 +1390,9 @@ function InBodySingleBarChart({ label, description, value, ranges, labels, unit,
   };
 
   const renderBar = (valObj: any) => {
-    const rawVal = typeof valObj === 'object' ? valObj.value : valObj;
-    const dir = typeof valObj === 'object' ? valObj.direction : null;
+    if (valObj === null || valObj === undefined) return <div className="flex-1" />;
+    const rawVal = (valObj !== null && typeof valObj === 'object') ? valObj.value : valObj;
+    const dir = (valObj !== null && typeof valObj === 'object') ? valObj.direction : null;
     // If ranges start with a negative number, assume we want a signed scale
     const val = (ranges[0] < 0 && (dir === 'L' || dir === '왼')) ? -rawVal : rawVal;
     const percentage = Math.min(100, Math.max(0, ((val - min) / total) * 100));
@@ -1828,7 +1829,7 @@ function InBodyTableRow({ label, description, value, isAngle, isSlope, isTilt, i
       if (val <= 50) return { label: '주의', color: 'text-amber-600', display: `${(val?.toFixed(1) || '-') }°`, reference: '≤40.0°' };
       return { label: '심각', color: 'text-rose-500', display: `${(val?.toFixed(1) || '-') }°`, reference: '≤40.0°' };
     }
-    if (typeof value === 'object' && value.direction) {
+    if (value !== null && typeof value === 'object' && value.direction) {
       const isNormal = value.value <= 2;
       const dir = value.direction === 'L' ? '왼' : value.direction === 'R' ? '오' : value.direction;
       return { label: isNormal ? '정상' : '이상', color: isNormal ? 'text-sidiz-black' : 'text-rose-500', display: `${dir} ${(value.value?.toFixed(1) || '-') }°`, reference: '≤2.0°' };

@@ -519,7 +519,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden notranslate" translate="no">
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
       {/* Sidebar */}
       <motion.aside 
         initial={false}
@@ -669,11 +669,11 @@ export default function App() {
             <button className="w-full flex items-center justify-between px-4 py-2 text-xs sidiz-voice-3 text-slate-500 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors">
               <div className="flex items-center gap-2">
                 <Info size={14} />
-                {isSidebarHovered && <span>데이터 불러오기</span>}
+                데이터 불러오기
               </div>
-              {isSidebarHovered && <ChevronUp size={14} />}
+              <ChevronUp size={14} />
             </button>
-            <div className={`absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 py-2 transition-all z-[60] ${isSidebarHovered ? 'opacity-0 group-hover:opacity-100' : 'hidden'}`}>
+            <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all z-[60]">
               {mockUsers.map((user, i) => (
                 <button
                   key={i}
@@ -698,7 +698,7 @@ export default function App() {
             className="w-full flex items-center gap-2 px-4 py-2 text-xs sidiz-voice-3 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
           >
             <RotateCcw size={14} />
-            {isSidebarHovered && <span>데이터 초기화</span>}
+            데이터 초기화
           </button>
         </div>
       </motion.aside>
